@@ -14,7 +14,7 @@ class TaskEnv():
                  time_out: int = 6,
                  timeout_reward=-1,
                  goal_reward=1,
-                 time_reward_multiplicator=1):
+                 time_reward_multiplicator=1, frequencies_file=None):
         """Contructor for the TaskEnvironment
 
         Args:
@@ -33,7 +33,7 @@ class TaskEnv():
           'naar andere kamer/ruimte gestuurd',
           'met kracht tegen- of vastgehouden',
           'afzondering (deur op slot)']
-        frequencies = pd.read_csv("frequencies_add.csv", index_col=0)
+        frequencies = pd.read_csv(frequencies_file, index_col=0)
         for label in frequencies:
             for action in self.motions:
                 frequencies[label][action] = ast.literal_eval(frequencies[label][action])
