@@ -20,8 +20,7 @@ class TaskEnv(gym.Env):
     reward_range = (-float('inf'), float('inf'))
 
     def __init__(self,
-                 size: int = 15,
-                 time_out: int = 100,
+                 time_out: int = 6,
                  timeout_reward=-1,
                  goal_reward=1,
                  invalid_reward=-1,
@@ -34,52 +33,74 @@ class TaskEnv(gym.Env):
             time_out (int, optional): Time to explore the maze before the game is over. Defaults to 100.
         """
         super().__init__()
-        self.start_idx = [[1, 1]]
-        self.goal_idx = [[int(size * .75), int(size * .75)]]
 
         self.motions = [
             'contact beeindigd/weggegaan',
-            'client toegesproken/gesprek met client', 'geen',
-            'client afgeleid', 'naar andere kamer/ruimte gestuurd',
-            'met kracht tegen- of vastgehouden', 'afzondering (deur op slot)'
+            'client toegesproken/gesprek met client',
+            'geen',
+            'client afgeleid',
+            'naar andere kamer/ruimte gestuurd',
+            'met kracht tegen- of vastgehouden',
+            'afzondering (deur op slot)',
         ]
-        self.incidents = ['va','pp','po','sib']
-        frequencies:pd.DataFrame = pd.read_csv(frequencies_file, index_col=0)
-        
-        self.frequencies:pd.DataFrame = frequencies.map(ast.literal_eval)
-        
+        self.incidents = ['va', 'pp', 'po', 'sib']
+
+        self.severity = {
+            'va': 0.0,
+            'po': -1.0,
+            'sib': -3.0,
+            'pp': -4.0,
+            'Tau': 1.0
+        }
+
+        self.action_reward = {
+            'contact beeindigd/weggegaan': -1.0,
+            'client toegesproken/gesprek met client': 0,
+            'geen': 0,
+            'client afgeleid': -1.0,
+            'naar andere kamer/ruimte gestuurd': -1.0,
+            'met kracht tegen- of vastgehouden': -2.0,
+            'afzondering (deur op slot)': -2.0,
+        }
+
+        frequencies: pd.DataFrame = pd.read_csv(frequencies_file, index_col=0)
+
+        self.frequencies: pd.DataFrame = frequencies.map(ast.literal_eval)
+
         num_actions, num_incidents = self.frequencies.shape
-        
+
         # NOTE: Dim are num of actions, incidents and then following incidents
-        self.p_matrix = np.zeros((num_incidents, num_actions, num_incidents+1))
-        self.act2idx = {act:idx for idx, act in enumerate(self.motions)}
+        self.p_matrix = np.zeros(
+            (num_incidents, num_actions, num_incidents + 1))
+        self.act2idx = {act: idx for idx, act in enumerate(self.motions)}
         self.idx2act = dict(zip(self.act2idx.values(), self.act2idx.keys()))
-        self.inc2idx = {inc:idx for idx, inc in enumerate(self.incidents)}
+        self.inc2idx = {inc: idx for idx, inc in enumerate(self.incidents)}
         self.inc2idx["Tau"] = len(self.inc2idx)
         self.idx2inc = dict(zip(self.act2idx.values(), self.inc2idx.keys()))
 
         for m in self.motions:
             for i in self.incidents:
                 for key, val in self.frequencies.loc[m, i].items():
-                    self.p_matrix[self.inc2idx[i], self.act2idx[m], self.inc2idx[key]] = val
+                    self.p_matrix[self.inc2idx[i], self.act2idx[m],
+                                  self.inc2idx[key]] = val
 
         self.viewer = None
-        
+
         self.time_out = time_out
         self.timer = 0
         self.timeout_reward = timeout_reward
-        
+
         self.goal = self.inc2idx["Tau"]
         self.goal_reward = goal_reward
-        
+
         self.invalid_reward = invalid_reward
         self.time_reward_multiplicator = time_reward_multiplicator
         self.seed()
-        
+
         # Explore spaces
         self.observation_space = Discrete(len(self.incidents))
         self.action_space = Discrete(len(self.motions))
-        self.current_position = self.observation_space.sample()  
+        self.current_position = self.observation_space.sample()
         self.episode_actions = []
 
     def step(self, action: int) -> Tuple[Tuple[int, int], float, bool, object]:
@@ -88,27 +109,31 @@ class TaskEnv(gym.Env):
         valid = self._is_valid(self.current_position, action)
         self.episode_actions.append((action, "VALID" if valid else "INVALID"))
         new_position = self._get_next_state(self.current_position, action)
+
+        incident_penalty = self.severity[self.idx2inc[new_position]]
+        action_penalty = self.action_reward[self.idx2act[action]]
+
+        step_sequence = (self.idx2inc[self.current_position] , self.idx2act[action], self.idx2inc[new_position])
         if valid:
             # TODO: Need to define validity!!!
             pass
-         
+
         if self._is_timeout():
             reward = self.timeout_reward
             done = True
         elif self._is_goal(new_position):
-            reward = self.goal_reward
+            reward = incident_penalty + action_penalty
             done = True
         elif not valid:
             reward = self.invalid_reward
             done = False
         else:
-            reward = -(self.timer * self.time_reward_multiplicator)
+            reward = incident_penalty + action_penalty
+            # reward = reward - (self.timer * self.time_reward_multiplicator)
             done = False
         self.timer += 1
         self.current_position = new_position
-        return self.current_position, reward, done, {}
-
-
+        return self.current_position, reward, done, {"step_sequence":step_sequence}
 
     def reset(self) -> Tuple[int, int]:
         """Resets the environment. The agent will be transferred to a random location on the map. The goal stays the same and the timer is set to 0.
@@ -117,10 +142,6 @@ class TaskEnv(gym.Env):
             Tuple[int, int]: The initial position of the agent.
         """
         self.timer = 0
-        gx, gy = self.goal_idx[0]
-        dist = 1
-        is_valid = False
-
         self.current_position = self.observation_space.sample()
         return self.current_position
 
@@ -141,7 +162,7 @@ class TaskEnv(gym.Env):
         return True
 
     def _is_goal(self, incident: np.ndarray) -> bool:
-        
+
         return self.goal == incident
 
     def _is_timeout(self) -> bool:
@@ -213,3 +234,4 @@ class TaskEnv(gym.Env):
 #     gym.envs.register(id=cls.env_id, entry_point=cls, max_episode_steps=200)
 
 # register_environment(TaskEnv)
+
