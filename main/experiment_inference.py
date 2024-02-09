@@ -95,66 +95,69 @@ def map_reward_func(type_of_reward):
 if __name__ == "__main__":
     min_inc = "data/frequencies_final_1.csv"
     min_amount_incidents = [
-        "data/frequencies_final_1.csv",
+        # "data/frequencies_final_1.csv",
         "data/frequencies_final_3.csv",
         # "data/frequencies_final_5.csv",
         # "data/frequencies_final_7.csv",
     ]
     reward_fn = [
-        "reward_bart",
+        # "reward_bart",
         "reward_all_actions_the_same",
-        "reward_zero_tau",
-        "reward_zero_tau_all_actions_the_same",
+        # "reward_zero_tau",
+        # "reward_zero_tau_all_actions_the_same",
     ]
-    # episodes = 1000
-    episodes = 10
-    # episodesT = 1000
-    episodesT = 100
-    # repeats = list(range(20))
-    repeats = list(range(3))
+    episodes = 100
+    # episodes = 10
+    episodesT = 1000
+    # episodesT = 100
+    repeats = list(range(1000))
+    # repeats = list(range(3))
     all_results = []
     
-    pbar = tqdm(total=(len(min_amount_incidents) * len(reward_fn) * len(repeats) * (episodes + episodesT)))
+    pbar = tqdm(total=(len(min_amount_incidents) * len(reward_fn) * len(repeats)))
     
     for min_inc in min_amount_incidents:
         for rew_type in reward_fn:
             severity, action_reward = map_reward_func(rew_type)
-            env = TaskEnv(frequencies_file=min_inc)
+            env = TaskEnv(time_out=6, frequencies_file=min_inc)
             env.severity = severity
             env.action_reward = action_reward
 
-            s_agent = SarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
-            q_agent = QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
-            e_agent = ExpectedSarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
+            s_agent = SarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
+            q_agent = QAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
+            e_agent = ExpectedSarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
             r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
             f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
 
 
             for i in repeats:
-                for j in episodes:
+                for j in range(episodes):
                     _, _, s_agent = run_training_episode(s_agent, env)
                     _, _, q_agent = run_training_episode(q_agent, env)
                     _, _, e_agent = run_training_episode(e_agent, env)
                     r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
                     f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
                 agents = [s_agent, q_agent, e_agent, r_agent, f_agent]
-                for agent in agents:
-                    for k in episodesT:
-                        initial_starting_point = env.reset()
+                for k in range(episodesT):
+                    initial_starting_point = env.reset()
+                    for agent in agents:
+                        env.reset()
                         env.timer = 0
                         env.current_position = initial_starting_point
-                        total_reward, steps = run_real_episode(s_agent, env)
+                        total_reward, steps = run_real_episode(agent, env)
                         all_results.append(
                             {
                                 "repetition": i,
-                                "run": k,
+                                "episode": k,
                                 "agent": agent.__class__.__name__,
                                 "min_inc": min_inc,
                                 "rew_type": rew_type,
                                 "total_reward": total_reward,
                                 "steps": steps,
+                                "time": len(steps),
                             }
                         )
+                pbar.update(1)
 
     df_all_results = pd.DataFrame(all_results)
-    df_all_results.to_csv("experiment_inference.csv")
+    df_all_results.to_csv("data/experiment_inference.csv")
