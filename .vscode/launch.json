@@ -11,6 +11,14 @@
             "program": "experiment_parameters.py",
             "console": "integratedTerminal",
             "cwd":"${workspaceFolder}/main"
+        },
+        {
+            "name": "Inference Experiment",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "experiment_inference.py",
+            "console": "integratedTerminal",
+            "cwd":"${workspaceFolder}/main"
         }
     ]
 }

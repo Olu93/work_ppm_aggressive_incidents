@@ -111,11 +111,9 @@ def visualize_agent_brain(agent, env: envs.TaskEnv):
     ax2.set_title("Chosen action at position (x,y)")
     n = env.action_space.n + 1
 
-    decisions_map = np.array(
-        [[x_, y_, agent.select_action([x_, y_], True) + 1] for x_, y_ in path])
+    decisions_map = np.array([[x_, y_, agent.select_action([x_, y_], True) + 1] for x_, y_ in path])
     state_action_map = np.zeros_like(agent.q_table.max(axis=2))
-    state_action_map[decisions_map[:, 0],
-                     decisions_map[:, 1]] = decisions_map[:, 2]
+    state_action_map[decisions_map[:, 0], decisions_map[:, 1]] = decisions_map[:, 2]
     cmap = sns.color_palette("viridis", n)
     sns.heatmap(state_action_map, cmap=cmap, ax=ax2)
     colorbar = ax2.collections[0].colorbar
@@ -172,13 +170,11 @@ def run_training_episode(agent: agents.TDAgent, env: envs.TaskEnv):
     current_state = env.reset()
     total_reward = 0
     while not done:
-        next_action = (agent.select_action(current_state)
-                       if not next_action else next_action)
+        next_action = agent.select_action(current_state) if not next_action else next_action
         next_state, reward, done, _ = env.step(next_action)
         total_reward += reward / env.timer
         # print(reward)
-        next_action = agent.learn(current_state, next_action, next_state,
-                                  reward, done)
+        next_action = agent.learn(current_state, next_action, next_state, reward, done)
         current_state = next_state
 
     last_state = current_state
@@ -196,11 +192,7 @@ def animate_run(data: List[np.ndarray]):
             8,
             ev,
             style="italic",
-            bbox={
-                "facecolor": "red",
-                "alpha": 0.5,
-                "pad": 10
-            },
+            bbox={"facecolor": "red", "alpha": 0.5, "pad": 10},
         )
         display.display(plt.gcf())
         display.clear_output(wait=True)
@@ -214,8 +206,7 @@ def show_trained_agent(agent: agents.TDAgent, env: envs.TaskEnv):
     procedure.append(current_state)
     s_total_reward = 0
     while not done:
-        next_action = agent.select_action(current_state,
-                                          use_greedy_strategy=True)
+        next_action = agent.select_action(current_state, use_greedy_strategy=True)
         next_state, reward, done, _ = env.step(next_action)
         procedure.extend((next_action, next_state))
 
@@ -230,10 +221,7 @@ def show_trained_agent(agent: agents.TDAgent, env: envs.TaskEnv):
 env = envs.TaskEnv(frequencies_file="data/frequencies_final_3.csv")
 # agent = agents.RandomAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
 # agent = agents.SarsaAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
-agent = agents.QAgent(env=env,
-                      exploration_rate=0.1,
-                      learning_rate=0.1,
-                      discount_factor=0.9)
+agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
 # agent = agents.ExpectedSarsaAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
 for i in tqdm(range(3000)):
     total_reward, last_state, agent = run_training_episode(agent, env)
@@ -264,99 +252,83 @@ num_episodes = 1000
 all_params = list(it.product(epsilons, alphas, gammas, repeats))
 all_results = []
 for e, a, g, r in tqdm(all_params):
-    s_agent = agents.SarsaAgent(env=env,
-                                exploration_rate=e,
-                                learning_rate=a,
-                                discount_factor=g)
-    q_agent = agents.QAgent(env=env,
-                            exploration_rate=e,
-                            learning_rate=a,
-                            discount_factor=g)
-    e_agent = agents.ExpectedSarsaAgent(env=env,
-                                        exploration_rate=e,
-                                        learning_rate=a,
-                                        discount_factor=g)
-    r_agent = agents.RandomAgent(env=env,
-                                 exploration_rate=e,
-                                 learning_rate=a,
-                                 discount_factor=g)
-    f_agent = agents.MostFrequentPolicyAgent(env=env,
-                                             exploration_rate=e,
-                                             learning_rate=a,
-                                             discount_factor=g)
+    s_agent = agents.SarsaAgent(env=env, exploration_rate=e, learning_rate=a, discount_factor=g)
+    q_agent = agents.QAgent(env=env, exploration_rate=e, learning_rate=a, discount_factor=g)
+    e_agent = agents.ExpectedSarsaAgent(env=env, exploration_rate=e, learning_rate=a, discount_factor=g)
+    r_agent = agents.RandomAgent(env=env, exploration_rate=e, learning_rate=a, discount_factor=g)
+    f_agent = agents.MostFrequentPolicyAgent(env=env, exploration_rate=e, learning_rate=a, discount_factor=g)
     for i in range(1, num_episodes + 1):
-        reward_s_agent, last_state_s_agent, s_agent = run_training_episode(
-            s_agent, env)
-        reward_q_agent, last_state_q_agent, q_agent = run_training_episode(
-            q_agent, env)
-        reward_e_agent, last_state_e_agent, e_agent = run_training_episode(
-            e_agent, env)
-        reward_r_agent, last_state_r_agent, r_agent = run_training_episode(
-            r_agent, env)
-        reward_f_agent, last_state_f_agent, f_agent = run_training_episode(
-            f_agent, env)
+        reward_s_agent, last_state_s_agent, s_agent = run_training_episode(s_agent, env)
+        reward_q_agent, last_state_q_agent, q_agent = run_training_episode(q_agent, env)
+        reward_e_agent, last_state_e_agent, e_agent = run_training_episode(e_agent, env)
+        reward_r_agent, last_state_r_agent, r_agent = run_training_episode(r_agent, env)
+        reward_f_agent, last_state_f_agent, f_agent = run_training_episode(f_agent, env)
 
-        all_results.append({
-            "agent": "SARSA",
-            "epsilon": e,
-            "alpha": a,
-            "gamma": g,
-            "episode": i,
-            "repeat": r,
-            "total_reward": reward_s_agent,
-        })
-        all_results.append({
-            "agent": "QLearn",
-            "epsilon": e,
-            "alpha": a,
-            "gamma": g,
-            "episode": i,
-            "repeat": r,
-            "total_reward": reward_q_agent,
-        })
-        all_results.append({
-            "agent": "ESARSA",
-            "epsilon": e,
-            "alpha": a,
-            "gamma": g,
-            "episode": i,
-            "repeat": r,
-            "total_reward": reward_e_agent,
-        })
-        all_results.append({
-            "agent": "Random",
-            "epsilon": e,
-            "alpha": a,
-            "gamma": g,
-            "episode": i,
-            "repeat": r,
-            "total_reward": reward_r_agent,
-        })
-        all_results.append({
-            "agent": "Frequent",
-            "epsilon": e,
-            "alpha": a,
-            "gamma": g,
-            "episode": i,
-            "repeat": r,
-            "total_reward": reward_f_agent,
-        })
+        all_results.append(
+            {
+                "agent": "SARSA",
+                "epsilon": e,
+                "alpha": a,
+                "gamma": g,
+                "episode": i,
+                "repeat": r,
+                "total_reward": reward_s_agent,
+            }
+        )
+        all_results.append(
+            {
+                "agent": "QLearn",
+                "epsilon": e,
+                "alpha": a,
+                "gamma": g,
+                "episode": i,
+                "repeat": r,
+                "total_reward": reward_q_agent,
+            }
+        )
+        all_results.append(
+            {
+                "agent": "ESARSA",
+                "epsilon": e,
+                "alpha": a,
+                "gamma": g,
+                "episode": i,
+                "repeat": r,
+                "total_reward": reward_e_agent,
+            }
+        )
+        all_results.append(
+            {
+                "agent": "Random",
+                "epsilon": e,
+                "alpha": a,
+                "gamma": g,
+                "episode": i,
+                "repeat": r,
+                "total_reward": reward_r_agent,
+            }
+        )
+        all_results.append(
+            {
+                "agent": "Frequent",
+                "epsilon": e,
+                "alpha": a,
+                "gamma": g,
+                "episode": i,
+                "repeat": r,
+                "total_reward": reward_f_agent,
+            }
+        )
 
 df_all_results = pd.DataFrame(all_results)
-df_mean_results = (df_all_results.groupby(
-    ["agent", "epsilon", "alpha", "gamma",
-     "episode"]).mean().drop("repeat", axis=1).reset_index())
-df_mean_results.sort_values("total_reward", ascending=False).groupby(
-    ["agent", "epsilon", "alpha",
-     "gamma"]).mean().reset_index().drop("episode", axis=1)
+df_mean_results = df_all_results.groupby(["agent", "epsilon", "alpha", "gamma", "episode"]).mean().drop("repeat", axis=1).reset_index()
+df_mean_results.sort_values("total_reward", ascending=False).groupby(["agent", "epsilon", "alpha", "gamma"]).mean().reset_index().drop("episode", axis=1)
 
 # %%
-fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3,
-                                                         2,
-                                                         figsize=(25, 15))
+fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(25, 15))
 
 smooth_factor = 20
-tmp = df_mean_results  #[df_mean_results.agent.isin(["SARSA", "QLearn", "ESARSA", "Random",])]
+tmp = df_mean_results  # [df_mean_results.agent.isin(["SARSA", "QLearn", "ESARSA", "Random",])]
 all_labels = set()
 for (e, a, g), df in df_mean_results.groupby(["epsilon", "alpha", "gamma"]):
     all_labels.add((e, a, g))
@@ -447,14 +419,30 @@ fig.tight_layout()
 
 # %%
 
-best_configs = (df_mean_results.groupby([
-    "agent",
-    "epsilon",
-    "alpha",
-    "gamma",
-]).mean().reset_index().sort_values("total_reward", ascending=False).groupby([
-    "agent",
-]).apply(lambda df: df.head(1))).drop(["agent"], axis=1).reset_index().set_index("agent")
+best_configs = (
+    (
+        df_mean_results.groupby(
+            [
+                "agent",
+                "epsilon",
+                "alpha",
+                "gamma",
+            ]
+        )
+        .mean()
+        .reset_index()
+        .sort_values("total_reward", ascending=False)
+        .groupby(
+            [
+                "agent",
+            ]
+        )
+        .apply(lambda df: df.head(1))
+    )
+    .drop(["agent"], axis=1)
+    .reset_index()
+    .set_index("agent")
+)
 
 best_configs
 
@@ -526,16 +514,18 @@ for i in tqdm(range(20), desc="Repetition"):
         env.timer = 0
         env.current_position = initial_starting_point
         f_total_reward = run_real_episode(f_agent, env)
-        rewards.append({
-            "repetition": i,
-            "run": k,
-            "QLearn": q_total_reward,
-            "SARSA": s_total_reward,
-            "ESARSA": e_total_reward,
-            "Random": r_total_reward,
-            "Frequent": f_total_reward,
-            "initial_states": initial_starting_point,
-        })
+        rewards.append(
+            {
+                "repetition": i,
+                "run": k,
+                "QLearn": q_total_reward,
+                "SARSA": s_total_reward,
+                "ESARSA": e_total_reward,
+                "Random": r_total_reward,
+                "Frequent": f_total_reward,
+                "initial_states": initial_starting_point,
+            }
+        )
 
 pd.DataFrame(rewards)
 
@@ -549,10 +539,8 @@ ax1.plot(across_training_rewards["ESARSA"], label="Expected Sarsa")
 ax1.plot(across_training_rewards["Random"], label="Random")
 ax1.plot(across_training_rewards["Frequent"], label="Most Frequent")
 ax1.legend()
-ax2.plot(gaussian_filter1d(across_training_rewards["SARSA"], smooth_factor),
-         label="Sarsa")
-ax2.plot(gaussian_filter1d(across_training_rewards["QLearn"], smooth_factor),
-         label="QLearn")
+ax2.plot(gaussian_filter1d(across_training_rewards["SARSA"], smooth_factor), label="Sarsa")
+ax2.plot(gaussian_filter1d(across_training_rewards["QLearn"], smooth_factor), label="QLearn")
 ax2.plot(
     gaussian_filter1d(across_training_rewards["ESARSA"], smooth_factor),
     label="Expected Sarsa",
@@ -573,110 +561,17 @@ rewards_df = pd.DataFrame(rewards)
 rewards_df.agg(["mean", "median", "max", "min"])
 
 # %%
-rewards_df["Initial incident"] = rewards_df["initial_states"].replace(
-    env.idx2inc)
+rewards_df["Initial incident"] = rewards_df["initial_states"].replace(env.idx2inc)
 rewards_by_state = rewards_df.groupby("Initial incident").mean().reset_index()
 rewards_by_state
 
 # %%
 melted_rewards = rewards_df.melt(
-    id_vars="Initial incident",
-    value_vars=["QLearn", "SARSA", "ESARSA", "Random", "Frequent"],
-    var_name="Agent",
-    value_name="Total Rewards")
+    id_vars="Initial incident", value_vars=["QLearn", "SARSA", "ESARSA", "Random", "Frequent"], var_name="Agent", value_name="Total Rewards"
+)
 melted_rewards
 
 # %%
 sns.boxplot(melted_rewards, x="Agent", y="Total Rewards")
 plt.show()
-# %%
-rewards = []
-for i in tqdm(range(1000)):
-    initial_starting_point = env.reset()
-
-    env.timer = 0
-    env.maze.objects.agent.positions = [initial_starting_point]
-    s_total_reward = run_real_episode(s_agent, env)
-
-    env.timer = 0
-    env.maze.objects.agent.positions = [initial_starting_point]
-    q_total_reward = run_real_episode(q_agent, env)
-
-    env.timer = 0
-    env.maze.objects.agent.positions = [initial_starting_point]
-    e_total_reward = run_real_episode(e_agent, env)
-
-    initial_x, initial_y = initial_starting_point
-    rewards.append({
-        "QLearn": q_total_reward,
-        "SARSA": s_total_reward,
-        "ESARSA": e_total_reward,
-        "initial_x": initial_x,
-        "initial_y": initial_y,
-    })
-
-pd.DataFrame(rewards)
-
-# %%
-across_serious_rewards = pd.DataFrame(rewards)
-fig = plt.figure(figsize=(15, 5))
-labels = ["SARSA", "QLearn", "ESARSA"]
-
-ax = fig.add_subplot(121)
-ax.boxplot(across_serious_rewards[labels].values,
-           showfliers=False,
-           labels=labels)
-ax.set_title("Without outliers")
-ax = fig.add_subplot(122)
-ax.boxplot(across_serious_rewards[labels].values,
-           showfliers=True,
-           labels=labels)
-ax.set_title("With outliers")
-plt.show()
-
-# %%
-fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
-across_map_performance = (across_serious_rewards.groupby(
-    ["initial_x", "initial_y"]).mean().reset_index())
-
-path = np.array(across_serious_rewards[["initial_x", "initial_y"]].values)
-map_outline = env.maze.to_value()
-
-ax1.set_title("Map")
-sns.heatmap(map_outline, ax=ax1, cmap="viridis")
-
-ax2.set_title("SARSA: Average reward by state")
-s_performances = across_serious_rewards["SARSA"].values
-s_state_value_map = np.ones_like(map_outline) * np.nan
-s_state_value_map[path[:, 0], path[:, 1]] = s_performances
-sns.heatmap(s_state_value_map, ax=ax2, cmap="viridis")
-
-ax3.set_title("QLearn: Average reward by state")
-q_performances = across_serious_rewards["QLearn"].values
-q_state_value_map = np.ones_like(map_outline) * np.nan
-q_state_value_map[path[:, 0], path[:, 1]] = q_performances
-sns.heatmap(q_state_value_map, ax=ax3, cmap="viridis")
-
-ax4.set_title("Expected SARSA: Average reward by state")
-e_state_value_map = np.ones_like(map_outline) * np.nan
-e_performances = across_serious_rewards["ESARSA"].values
-e_state_value_map[path[:, 0], path[:, 1]] = e_performances
-sns.heatmap(e_state_value_map, ax=ax4, cmap="viridis")
-
-plt.show()
-
-# %%
-print("SARSA")
-visualize_agent_brain(s_agent, env)
-print("QLearn")
-visualize_agent_brain(q_agent, env)
-print("ESARSA")
-visualize_agent_brain(e_agent, env)
-# %%
-show_trained_agent(s_agent, env)
-# %%
-show_trained_agent(q_agent, env)
-# %%
-show_trained_agent(e_agent, env)
-
 # %%
