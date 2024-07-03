@@ -1,24 +1,25 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Parallel Experiment",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "experiment_parameters.py",
-            "console": "integratedTerminal",
-            "cwd":"${workspaceFolder}/main"
-        },
-        {
-            "name": "Inference Experiment",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "experiment_inference.py",
-            "console": "integratedTerminal",
-            "cwd":"${workspaceFolder}/main"
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    { "name": "Python Debugger: Module", "type": "debugpy", "request": "launch", "module": "main.agent" },
+    {
+      "name": "Parallel Experiment",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "experiment_parameters.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/main"
+    },
+    {
+      "name": "Inference Experiment",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "experiment_inference.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/main"
+    }
+  ]
 }

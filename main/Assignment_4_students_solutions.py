@@ -124,7 +124,7 @@ def visualize_agent_brain(agent, env: envs.TaskEnv):
     return plt.show()
 
 
-env = envs.TaskEnv(time_out=6, frequencies_file="data/frequencies_final_3.csv")
+env = envs.TaskEnv(time_out=6, frequencies_file="../data/frequencies_final_3.csv")
 env.reset()
 # %% [markdown]
 #

@@ -103,7 +103,7 @@ class TaskEnv(gym.Env):
         self.current_position = self.observation_space.sample()
         self.episode_actions = []
 
-    def step(self, action: int) -> Tuple[Tuple[int, int], float, bool, object]:
+    def step(self, action: int) -> Tuple[int, float, bool, object]:
         motion = self.motions[action]
 
         valid = self._is_valid(self.current_position, action)
@@ -113,7 +113,8 @@ class TaskEnv(gym.Env):
         incident_penalty = self.severity[self.idx2inc[new_position]]
         action_penalty = self.action_reward[self.idx2act[action]]
 
-        step_sequence = (self.idx2inc[self.current_position] , self.idx2act[action], self.idx2inc[new_position])
+        step_sequence = (self.idx2inc[self.current_position],
+                         self.idx2act[action], self.idx2inc[new_position])
         if valid:
             # TODO: Need to define validity!!!
             pass
@@ -133,7 +134,38 @@ class TaskEnv(gym.Env):
             done = False
         self.timer += 1
         self.current_position = new_position
-        return self.current_position, reward, done, {"step_sequence":step_sequence}
+        return self.current_position, reward, done, {
+            "step_sequence": step_sequence
+        }
+
+    def reward_function(
+            self, action: int, state: int,
+            next_state: int) -> Tuple[int, float, bool, object]:
+
+        valid = self._is_valid(state, action)
+        self.episode_actions.append((action, "VALID" if valid else "INVALID"))
+
+        incident_penalty = self.severity[self.idx2inc[next_state]]
+        action_penalty = self.action_reward[self.idx2act[action]]
+
+        if valid:
+            # TODO: Need to define validity!!!
+            pass
+
+        if self._is_timeout():
+            reward = self.timeout_reward
+        elif self._is_goal(next_state):
+            reward = incident_penalty + action_penalty
+        elif not valid:
+            reward = self.invalid_reward
+        else:
+            reward = incident_penalty + action_penalty
+
+        return reward
+
+    def transition_probability(self, action: int, state: int, next_state: int):
+        p = self.p_matrix[state, action, next_state]
+        return p
 
     def reset(self) -> Tuple[int, int]:
         """Resets the environment. The agent will be transferred to a random location on the map. The goal stays the same and the timer is set to 0.
@@ -234,4 +266,3 @@ class TaskEnv(gym.Env):
 #     gym.envs.register(id=cls.env_id, entry_point=cls, max_episode_steps=200)
 
 # register_environment(TaskEnv)
-
