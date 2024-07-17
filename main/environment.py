@@ -143,7 +143,6 @@ class TaskEnv(gym.Env):
             next_state: int) -> Tuple[int, float, bool, object]:
 
         valid = self._is_valid(state, action)
-        self.episode_actions.append((action, "VALID" if valid else "INVALID"))
 
         incident_penalty = self.severity[self.idx2inc[next_state]]
         action_penalty = self.action_reward[self.idx2act[action]]
