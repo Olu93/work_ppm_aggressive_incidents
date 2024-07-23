@@ -10,13 +10,14 @@ import seaborn as sns
 df_original = pd.read_excel('data/full_data_output.xlsx')
 df_original
 # %%
-col_env_reaction = 'Next_Type_Eps'
+col_s = 'Aggression_short'
+col_s_prime = 'Next_Type_Eps'
 col_env_reaction_days = 'Next_DaysToNext'
 col_agent_action = 'reaction'
 col_agent_action_orig = '[B09] Maatregelen om agressie te stoppen'
 col_aao_mod = 'agent_action'
-cols_important = [col_aao_mod, col_env_reaction]
-cols_all = [col_agent_action_orig, col_env_reaction_days, col_env_reaction]
+cols_important = [col_aao_mod, col_s_prime]
+cols_all = [col_agent_action_orig, col_env_reaction_days, col_s_prime]
 
 df = df_original.copy()[cols_all]
 df[col_aao_mod] = df[cols_all][col_agent_action_orig].str.split(';')

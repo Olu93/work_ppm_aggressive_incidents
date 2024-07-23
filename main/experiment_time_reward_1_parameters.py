@@ -142,8 +142,8 @@ if __name__ == "__main__":
                    min_amount_incidents, reward_fn))
     all_results = []
 
-    # run_experiment(all_params[0])
-    with mp.Pool(8) as p:
+    r = run_experiment(all_params[0])
+    with mp.Pool(4) as p:
         for results in p.imap_unordered(run_experiment,
                                         tqdm(all_params,
                                              total=len(all_params)),
@@ -162,7 +162,7 @@ if __name__ == "__main__":
         "min_inc",
         "rew_type",
     ]).mean().drop("repeat", axis=1).reset_index())
-    df_mean_results.to_csv("../data/experiment_probablistic_time_reward_1.csv")
+    df_mean_results.to_csv("../data/experiment_probablistic_time_reward_1_parameters.csv")
 
 
     # TODO:

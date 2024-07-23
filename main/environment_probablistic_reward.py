@@ -58,7 +58,7 @@ class TaskEnvProbablisticTimePenalty(TaskEnv):
         }
 
     def sample_days_past(self, action, position):
-        return stats.geom.rvs(self.time_probs[self.idx2act[action]][self.idx2inc[position]], size=1)
+        return stats.geom.rvs(self.time_probs[self.idx2act[action]][self.idx2inc[position]], size=1)[0]
 
     def transition_probability(self, action: int, state: int, next_state: int):
         p = self.p_matrix[state, action, next_state]
