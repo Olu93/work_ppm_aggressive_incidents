@@ -30,7 +30,7 @@ def run_training_episode(agent, env):
 def run_experiment(params):
     (Agent, e, a, g, r, num_e, min_inc, rew_type) = params
     
-    env = TaskEnvProbablisticTimePenalty(time_out=1000, frequencies_file=min_inc, time_probabilities_file="../data/prob_time_given_action_reaction.json")
+    env = TaskEnvProbablisticTimePenalty(time_out=365, frequencies_file=min_inc, time_probabilities_file="../data/prob_time_given_incident_action_reaction.json")
     severity, action_reward = map_reward_func(rew_type)
     env.severity=severity
     env.action_reward=action_reward

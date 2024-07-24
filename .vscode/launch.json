@@ -23,10 +23,10 @@
       "cwd": "${workspaceFolder}/main"
     },
     {
-      "name": "Time Reward 1 Experiment",
+      "name": "Time Reward 1 Experiment Parameters",
       "type": "debugpy",
       "request": "launch",
-      "program": "experiment_time_reward_1.py",
+      "program": "experiment_time_reward_1_parameters.py",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}/main"
     }

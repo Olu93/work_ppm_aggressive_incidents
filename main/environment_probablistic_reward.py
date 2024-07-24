@@ -26,7 +26,7 @@ class TaskEnvProbablisticTimePenalty(TaskEnv):
         self.episode_actions.append((action, "VALID" if valid else "INVALID"))
         new_position = self._get_next_state(self.current_position, action)
 
-        sampled_days_past = self.sample_days_past(action, new_position)
+        sampled_days_past = self.sample_days_past(self.current_position, action, new_position)
 
         step_sequence = (self.idx2inc[self.current_position],
                          self.idx2act[action], self.idx2inc[new_position])
@@ -57,8 +57,12 @@ class TaskEnvProbablisticTimePenalty(TaskEnv):
             "step_sequence": step_sequence
         }
 
-    def sample_days_past(self, action, position):
-        return stats.geom.rvs(self.time_probs[self.idx2act[action]][self.idx2inc[position]], size=1)[0]
+    def sample_days_past(self, incident,  action, reaction):
+        try:
+            return stats.geom.rvs(self.time_probs[self.idx2inc[incident]][self.idx2act[action]][self.idx2inc[reaction]], size=1)[0]
+        except KeyError as e:
+            # print(e)
+            return stats.geom.rvs(self.time_probs["Other"]["Other"]["Other"], size=1)[0]
 
     def transition_probability(self, action: int, state: int, next_state: int):
         p = self.p_matrix[state, action, next_state]

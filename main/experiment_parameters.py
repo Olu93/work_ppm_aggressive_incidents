@@ -158,7 +158,7 @@ if __name__ == "__main__":
         "min_inc",
         "rew_type",
     ]).mean().drop("repeat", axis=1).reset_index())
-    df_mean_results.to_csv("data/experiment_parameter_search_mean.csv")
+    df_mean_results.to_csv("../data/experiment_parameter_search_mean.csv")
 
 
     # TODO:

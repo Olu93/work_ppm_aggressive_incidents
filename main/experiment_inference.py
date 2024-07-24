@@ -160,4 +160,4 @@ if __name__ == "__main__":
                 pbar.update(1)
 
     df_all_results = pd.DataFrame(all_results)
-    df_all_results.to_csv("data/experiment_inference.csv")
+    df_all_results.to_csv("../data/experiment_inference.csv")

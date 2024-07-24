@@ -40,19 +40,6 @@ def run_real_episode(agent: TDAgent, env: TaskEnv):
     return total_reward, steps
 
 
-def run_experiment(params):
-    (Agent, e, a, g, r, num_e, min_inc) = params
-    env = TaskEnv(frequencies_file=min_inc)
-    all_results = []
-    agent = Agent(env=env, exploration_rate=e, learning_rate=a, discount_factor=g)
-    for i in range(1, num_e + 1):
-        reward_s_agent, last_state_s_agent, s_agent = run_real_episode(agent, env)
-        all_results.append(
-            {"agent": type(agent).__name__, "epsilon": e, "alpha": a, "gamma": g, "episode": i, "min_inc": min_inc, "repeat": r, "total_reward": reward_s_agent}
-        )
-    return all_results
-
-
 def map_reward_func(type_of_reward):
     severity = {"va": 0.0, "po": -1.0, "sib": -3.0, "pp": -4.0, "Tau": 1.0}
 
@@ -111,7 +98,7 @@ if __name__ == "__main__":
     # episodes = 10
     episodesT = 1000
     # episodesT = 100
-    repeats = list(range(1000))
+    repeats = list(range(100))
     # repeats = list(range(3))
     all_results = []
     
@@ -120,13 +107,13 @@ if __name__ == "__main__":
     for min_inc in min_amount_incidents:
         for rew_type in reward_fn:
             severity, action_reward = map_reward_func(rew_type)
-            env = TaskEnvProbablisticTimePenalty(time_out=1000, frequencies_file=min_inc, time_probabilities_file="../data/prob_time_given_action_reaction.json")
+            env = TaskEnvProbablisticTimePenalty(time_out=365, frequencies_file=min_inc, time_probabilities_file="../data/prob_time_given_incident_action_reaction.json")
             env.severity = severity
             env.action_reward = action_reward
 
-            s_agent = SarsaAgent(env=env, exploration_rate=0.01, learning_rate=0.01, discount_factor=0.1)
-            q_agent = QAgent(env=env, exploration_rate=0.1, learning_rate=0.01, discount_factor=0.9)
-            e_agent = ExpectedSarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.01, discount_factor=0.5)
+            e_agent = ExpectedSarsaAgent(env=env, exploration_rate=0.01, learning_rate=0.01, discount_factor=0.1)
+            q_agent = QAgent(env=env, exploration_rate=0.1, learning_rate=0.9, discount_factor=0.9)
+            s_agent = SarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.5, discount_factor=0.9)
             r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
             f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
 
@@ -161,4 +148,4 @@ if __name__ == "__main__":
                 pbar.update(1)
 
     df_all_results = pd.DataFrame(all_results)
-    df_all_results.to_csv("data/experiment_probablistic_time_reward_1_inference.csv")
+    df_all_results.to_csv("../data/experiment_probablistic_time_reward_1_inference.csv")
