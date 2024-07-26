@@ -25,6 +25,7 @@ df = df.explode(col_aao_mod).drop(columns=col_agent_action_orig)
 df = df.dropna(subset=[col_aao_mod, col_env_reaction_days], how='any')
 df[col_aao_mod] = df[col_aao_mod].str.strip()
 df[col_aao_mod] = df[col_aao_mod].fillna('geen').replace('nan', 'geen') 
+df[col_env_reaction_days] /= 10
 df
 # %%
 group_counts = df.groupby(cols_important).apply(lambda df: pd.Series({"cnt":len(df)})).reset_index()

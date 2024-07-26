@@ -25,6 +25,7 @@ df = df.explode(col_aao_mod).drop(columns=col_agent_action_orig)
 df = df.dropna(subset=[col_aao_mod, col_env_reaction_days], how='any')
 df[col_aao_mod] = df[col_aao_mod].str.strip()
 df[col_aao_mod] = df[col_aao_mod].fillna('geen').replace('nan', 'geen')
+df[col_env_reaction_days] /= 10
 df = df.reset_index()
 df
 
@@ -138,3 +139,6 @@ loaded_pipeline = joblib.load(joblib_file)
 y_pred_loaded = loaded_pipeline.predict(X_test)
 print(confusion_matrix(y_test, y_pred_loaded))
 print(classification_report(y_test, y_pred_loaded))
+# %%
+
+# %%
