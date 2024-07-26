@@ -29,6 +29,14 @@
       "program": "experiment_time_reward_1_parameters.py",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}/main"
+    },
+    {
+      "name": "Time Reward 2 Experiment Parameters",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "experiment_time_reward_2_parameters.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/main"
     }
   ]
 }
