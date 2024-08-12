@@ -122,43 +122,28 @@ class TaskEnv(gym.Env):
         self.episode_actions = []
 
     def step(self, action: int) -> Tuple[int, float, bool, object]:
-        motion = self.motions[action]
+        current_state = self.current_position
 
-        valid = self._is_valid(self.current_position, action)
+        valid = self._is_valid(current_state, action)
         self.episode_actions.append((action, "VALID" if valid else "INVALID"))
-        new_position = self._get_next_state(self.current_position, action)
+        next_state = self._get_next_state(current_state, action)
 
-        incident_penalty = self.severity[self.idx2inc[new_position]]
-        action_penalty = self.action_reward[self.idx2act[action]]
+        step_sequence = (self.idx2inc[current_state],
+                         self.idx2act[action], self.idx2inc[next_state])
 
-        step_sequence = (self.idx2inc[self.current_position],
-                         self.idx2act[action], self.idx2inc[new_position])
-        if valid:
-            # TODO: Need to define validity!!!
-            pass
-
-        if self._is_timeout():
-            reward = self.timeout_reward
-            done = True
-        elif self._is_goal(new_position):
-            reward = incident_penalty + action_penalty
-            done = True
-        elif not valid:
-            reward = self.invalid_reward
-            done = False
-        else:
-            reward = incident_penalty + action_penalty
-            # reward = reward - (self.timer * self.time_reward_multiplicator)
-            done = False
+        reward = self.reward_function(current_state, action, next_state)
+        done = True if self._is_goal(next_state) else False
+        
         self.timer += 1
-        self.current_position = new_position
+        self.current_position = next_state
+
         return self.current_position, reward, done, {
             "step_sequence": step_sequence
         }
 
     def reward_function(
             self, action: int, state: int,
-            next_state: int) -> Tuple[int, float, bool, object]:
+            next_state: int, **kwargs) -> Tuple[int, float, bool, object]:
 
         valid = self._is_valid(state, action)
 

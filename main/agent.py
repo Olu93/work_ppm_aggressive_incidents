@@ -201,7 +201,7 @@ class PolicyIterationAgent(TDAgent):
             probability = self.env.transition_probability(
                         action, state, next_state)
             reward = self.env.reward_function(
-                        action, state, next_state)
+                        state, action, next_state)
             q_value += probability * (reward + (self.gamma * self.q_table[state, action]))
         return q_value
                     

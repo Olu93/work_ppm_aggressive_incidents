@@ -226,14 +226,14 @@ importlib.reload(envs_prob)
 
 
 # env = TaskEnv(timeout_reward=-1, goal_reward=1, invalid_reward=-1, time_reward_multiplicator=.01)
-env = envs.TaskEnv(time_out=365, frequencies_file="../data/frequencies_final_3.csv")
+env = envs.TaskEnv(time_out=6, frequencies_file="../data/frequencies_final_3.csv")
 # env = envs_prob.TaskEnvProbablisticTimePenalty(time_out=365, time_reward_multiplicator=0.01, frequencies_file="../data/frequencies_final_3.csv", time_probabilities_file="../data/prob_time_given_incident_action_reaction.json")
 # env = envs_prob.TaskEnv2StepProbablisticTimePenalty(time_out=365, time_reward_multiplicator=1, frequencies_file="../data/frequencies_final_3.csv", time_probabilities_file="../data/prob_time_given_incident_action.json", classification_pipeline="../data/logistic_regression_pipeline.pkl")
 # agent = agents.RandomAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
 # agent = agents.SarsaAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
-# agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
+agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
 # agent = agents.ExpectedSarsaAgent(env=env, exploration_rate=0.01, learning_rate=.5, discount_factor=0.5)
-agent = agents.PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
+# agent = agents.PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
 # agent = agents.MostFrequentPolicyAgent(env=env, exploration_rate=None, learning_rate=None, discount_factor=None)
 
 rw = []

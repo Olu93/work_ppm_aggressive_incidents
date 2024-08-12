@@ -21,18 +21,36 @@ class TaskEnvProbablisticTimePenalty(TaskEnv):
         
 
     def step(self, action: int) -> Tuple[int, float, bool, object]:
-        motion = self.motions[action]
+        current_state = self.current_position
 
-        valid = self._is_valid(self.current_position, action)
+        valid = self._is_valid(current_state, action)
         self.episode_actions.append((action, "VALID" if valid else "INVALID"))
-        new_position = self._get_next_state(self.current_position, action)
+        next_state = self._get_next_state(self.current_position, action)
 
-        sampled_days_past = self.sample_days_past(self.current_position, action, new_position)
+        days_elapsed = self.sample_days_past(current_state, action, next_state)
 
-        step_sequence = (self.idx2inc[self.current_position],
-                         self.idx2act[action], self.idx2inc[new_position])
+        step_sequence = (self.idx2inc[current_state],
+                         self.idx2act[action], self.idx2inc[next_state])
 
-        incident_penalty = self.severity[self.idx2inc[new_position]]
+        reward = self.reward_function(current_state, action, next_state)
+        done = True if self._is_goal(next_state) else False
+
+        self.timer += days_elapsed
+        self.current_position = next_state
+        return current_state, reward, done, {
+            "step_sequence": step_sequence
+        }
+
+
+    def reward_function(
+            self, action: int, state: int,
+            next_state: int, **kwargs) -> Tuple[int, float, bool, object]:
+        
+        past_days = kwargs.get('past_days')
+
+        valid = self._is_valid(state, action)
+
+        incident_penalty = self.severity[self.idx2inc[next_state]]
         action_penalty = self.action_reward[self.idx2act[action]]
 
         if valid:
@@ -41,22 +59,14 @@ class TaskEnvProbablisticTimePenalty(TaskEnv):
 
         if self._is_timeout():
             reward = self.timeout_reward
-            done = True
-        elif self._is_goal(new_position):
-            reward = incident_penalty + action_penalty + (self.time_reward_multiplicator * sampled_days_past)
-            done = True
+        elif self._is_goal(next_state):
+            reward = incident_penalty + action_penalty + (self.time_reward_multiplicator * past_days)
         elif not valid:
             reward = self.invalid_reward
-            done = False
         else:
-            reward = incident_penalty + action_penalty + (self.time_reward_multiplicator * sampled_days_past)
-            done = False
+            reward = incident_penalty + action_penalty + (self.time_reward_multiplicator * past_days)
 
-        self.timer += sampled_days_past
-        self.current_position = new_position
-        return self.current_position, reward, done, {
-            "step_sequence": step_sequence
-        }
+        return reward
 
     def sample_days_past(self, incident,  action, reaction):
         try:
@@ -84,19 +94,37 @@ class TaskEnv2StepProbablisticTimePenalty(TaskEnv):
         
 
     def step(self, action: int) -> Tuple[int, float, bool, object]:
-        motion = self.motions[action]
+        current_state = self.current_position
 
-        valid = self._is_valid(self.current_position, action)
+        valid = self._is_valid(current_state, action)
         self.episode_actions.append((action, "VALID" if valid else "INVALID"))
 
-        sampled_days_past = self.sample_days_past(self.current_position, action)
-        new_position = self._get_next_state(self.current_position, action, past_days=sampled_days_past)
+        days_elapsed = self.sample_days_past(current_state, action)
+        next_state = self._get_next_state(current_state, action, past_days=days_elapsed)
 
 
-        step_sequence = (self.idx2inc[self.current_position],
-                         self.idx2act[action], self.idx2inc[new_position])
+        step_sequence = (self.idx2inc[current_state],
+                         self.idx2act[action], self.idx2inc[next_state])
 
-        incident_penalty = self.severity[self.idx2inc[new_position]]
+        reward = self.reward_function(current_state, action, next_state, past_days=days_elapsed)
+        done = True if self._is_goal(next_state) else False
+        
+        self.timer += days_elapsed
+        self.current_position = next_state
+
+        return current_state, reward, done, {
+            "step_sequence": step_sequence
+        }
+
+    def reward_function(
+            self, action: int, state: int,
+            next_state: int, **kwargs) -> Tuple[int, float, bool, object]:
+        
+        past_days = kwargs.get('past_days')
+
+        valid = self._is_valid(state, action)
+
+        incident_penalty = self.severity[self.idx2inc[next_state]]
         action_penalty = self.action_reward[self.idx2act[action]]
 
         if valid:
@@ -105,40 +133,26 @@ class TaskEnv2StepProbablisticTimePenalty(TaskEnv):
 
         if self._is_timeout():
             reward = self.timeout_reward
-            done = True
-        elif self._is_goal(new_position):
-            reward = incident_penalty + action_penalty + (self.time_reward_multiplicator * sampled_days_past)
-            done = True
+        elif self._is_goal(next_state):
+            reward = incident_penalty + action_penalty + (self.time_reward_multiplicator * past_days)
         elif not valid:
             reward = self.invalid_reward
-            done = False
         else:
-            reward = incident_penalty + action_penalty + (self.time_reward_multiplicator * sampled_days_past)
-            done = False
+            reward = incident_penalty + action_penalty + (self.time_reward_multiplicator * past_days)
 
-        self.timer += sampled_days_past
-        self.current_position = new_position
-        return self.current_position, reward, done, {
-            "step_sequence": step_sequence
-        }
+        return reward
+
 
     def transition_probability(self, action: int, state: int, next_state: int):
         p = self.p_matrix[state, action, next_state]
         return p
 
     def sample_days_past(self, incident, action):
-        # try:
         params = self.time_probs[self.idx2inc[incident]][self.idx2act[action]]
         shape = params.get('shape')
         loc = params.get('loc')
         scale = params.get('scale')
         return stats.weibull_min.rvs(shape, loc=loc, scale=scale, size=1)[0]
-        # except KeyError as e:
-        #     params = self.time_probs["Other"]["Other"]
-        #     shape = params.get('shape')
-        #     loc = params.get('loc')
-        #     scale = params.get('scale')            
-        #     return stats.weibull_min.rvs(self.time_probs["Other"]["Other"]["Other"], size=1)[0]
 
     def _get_next_state(self, state, action, **kwargs):
         past_days = kwargs.get('past_days')
