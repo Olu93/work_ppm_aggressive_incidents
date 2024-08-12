@@ -16,7 +16,7 @@ def run_training_episode(agent, env):
     while not done:
         next_action = agent.select_action(current_state) if not next_action else next_action
         next_state, reward, done, _ = env.step(next_action)
-        total_reward += reward / env.timer
+        total_reward += reward 
         # print(reward)
         next_action = agent.learn(current_state, next_action, next_state, reward, done)
         current_state = next_state

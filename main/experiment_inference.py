@@ -1,6 +1,6 @@
 import pandas as pd
 from environment import TaskEnv
-from agent import ExpectedSarsaAgent, MostFrequentPolicyAgent, QAgent, RandomAgent, SarsaAgent, TDAgent
+from agent import ExpectedSarsaAgent, MostFrequentPolicyAgent, PolicyIterationAgent, QAgent, RandomAgent, SarsaAgent, TDAgent
 import multiprocessing as mp
 from tqdm import tqdm
 import itertools as it
@@ -95,8 +95,8 @@ def map_reward_func(type_of_reward):
 if __name__ == "__main__":
     min_inc = "data/frequencies_final_1.csv"
     min_amount_incidents = [
-        # "data/frequencies_final_1.csv",
-        "data/frequencies_final_3.csv",
+        "data/frequencies_final_1.csv",
+        # "data/frequencies_final_3.csv",
         # "data/frequencies_final_5.csv",
         # "data/frequencies_final_7.csv",
     ]
@@ -128,6 +128,7 @@ if __name__ == "__main__":
             e_agent = ExpectedSarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
             r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
             f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
+            p_agent = PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
 
 
             for i in repeats:

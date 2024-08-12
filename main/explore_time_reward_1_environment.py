@@ -93,11 +93,12 @@ import matplotlib.gridspec as gridspec
 import agent as agents
 
 import importlib
-
+import environment_probablistic_reward as envs_prob
 from environment_probablistic_reward import TaskEnvProbablisticTimePenalty
 
 importlib.reload(envs)
 importlib.reload(agents)
+importlib.reload(envs_prob)
 
 
 def visualize_agent_brain(agent, env: envs.TaskEnv):
@@ -174,7 +175,7 @@ def run_training_episode(agent: agents.TDAgent, env: envs.TaskEnv):
     while not done:
         next_action = agent.select_action(current_state) if not next_action else next_action
         next_state, reward, done, _ = env.step(next_action)
-        total_reward += reward / env.timer
+        total_reward += reward 
         # print(reward)
         next_action = agent.learn(current_state, next_action, next_state, reward, done)
         current_state = next_state
@@ -219,17 +220,30 @@ def show_trained_agent(agent: agents.TDAgent, env: envs.TaskEnv):
     plt.show()
 
 
+importlib.reload(envs)
+importlib.reload(agents)
+importlib.reload(envs_prob)
+
+
 # env = TaskEnv(timeout_reward=-1, goal_reward=1, invalid_reward=-1, time_reward_multiplicator=.01)
-# env = envs.TaskEnv(frequencies_file="data/frequencies_final_3.csv")
-env = TaskEnvProbablisticTimePenalty(time_out=365, frequencies_file="../data/frequencies_final_3.csv", time_probabilities_file="../data/prob_time_given_incident_action_reaction.json")
+env = envs.TaskEnv(time_out=365, frequencies_file="../data/frequencies_final_3.csv")
+# env = envs_prob.TaskEnvProbablisticTimePenalty(time_out=365, time_reward_multiplicator=0.01, frequencies_file="../data/frequencies_final_3.csv", time_probabilities_file="../data/prob_time_given_incident_action_reaction.json")
+# env = envs_prob.TaskEnv2StepProbablisticTimePenalty(time_out=365, time_reward_multiplicator=1, frequencies_file="../data/frequencies_final_3.csv", time_probabilities_file="../data/prob_time_given_incident_action.json", classification_pipeline="../data/logistic_regression_pipeline.pkl")
 # agent = agents.RandomAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
 # agent = agents.SarsaAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
-agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
-# agent = agents.ExpectedSarsaAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
-for i in tqdm(range(3000)):
-    total_reward, last_state, agent = run_training_episode(agent, env)
-show_trained_agent(agent, env)
+# agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
+# agent = agents.ExpectedSarsaAgent(env=env, exploration_rate=0.01, learning_rate=.5, discount_factor=0.5)
+agent = agents.PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
+# agent = agents.MostFrequentPolicyAgent(env=env, exploration_rate=None, learning_rate=None, discount_factor=None)
 
+rw = []
+for i in tqdm(range(5000)):
+    total_reward, last_state, agent = run_training_episode(agent, env)
+    rw.append(total_reward)
+# show_trained_agent(agent, env)
+sns.lineplot(gaussian_filter1d(rw, 50))
+# 
+# %%
 # %% [markdown]
 #  ## 3 Play with parameters and analyse results
 #
@@ -249,7 +263,7 @@ show_trained_agent(agent, env)
 epsilons = [0.01, 0.1, 0.5, 0.9]
 alphas = [0.01, 0.1, 0.5, 0.9]
 gammas = [0.1, 0.5, 0.9]
-repeats = list(range(10))
+repeats = list(range(5))
 num_episodes = 1000
 
 all_params = list(it.product(epsilons, alphas, gammas, repeats))
@@ -322,7 +336,7 @@ for e, a, g, r in tqdm(all_params):
                 "total_reward": reward_f_agent,
             }
         )
-
+# %%
 df_all_results = pd.DataFrame(all_results)
 df_mean_results = df_all_results.groupby(["agent", "epsilon", "alpha", "gamma", "episode"]).mean().drop("repeat", axis=1).reset_index()
 df_mean_results.sort_values("total_reward", ascending=False).groupby(["agent", "epsilon", "alpha", "gamma"]).mean().reset_index().drop("episode", axis=1)
@@ -341,7 +355,7 @@ cmap = cm.get_cmap("icefire")
 norm = colors.Normalize(vmin=0, vmax=len(all_labels_to_color))
 # norm = colors.LogNorm(vmin=0.01, vmax=len(all_labels_to_color))
 
-for (e, a, g), df in df_mean_results.groupby(["epsilon", "alpha", "gamma"]):
+for (e, a, g), df in list(df_mean_results.groupby(["epsilon", "alpha", "gamma"]))[:]:
     sarsa_selector = df.agent == "SARSA"
     q_selector = df.agent == "QLearn"
     e_selector = df.agent == "ESARSA"
@@ -534,7 +548,7 @@ pd.DataFrame(rewards)
 
 # %%
 across_training_rewards = pd.DataFrame(rewards)
-smooth_factor = 20
+smooth_factor = 50
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 5))
 ax1.plot(across_training_rewards["SARSA"], label="Sarsa")
 ax1.plot(across_training_rewards["QLearn"], label="QLearn")
@@ -577,4 +591,4 @@ melted_rewards
 # %%
 sns.boxplot(melted_rewards, x="Agent", y="Total Rewards")
 plt.show()
-# %%
+    # %%

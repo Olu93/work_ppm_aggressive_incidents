@@ -139,9 +139,9 @@ env = envs.TaskEnv(frequencies_file="../data/frequencies_final_3.csv")
 importlib.reload(envs)
 importlib.reload(agents)
 agent = agents.PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
-for i in tqdm(range(3000)):
-    total_reward, last_state, agent = run_training_episode(agent, env)
+for i in tqdm(range(1000)): 
+    total_reward, lat_state, agent = run_training_episode(agent, env)
 # show_trained_agent(agent, env)
 agent.state_values
-
+#TODO: Reset tohe Q-Table
 # %%

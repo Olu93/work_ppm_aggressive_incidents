@@ -43,13 +43,13 @@ class TaskEnvProbablisticTimePenalty(TaskEnv):
             reward = self.timeout_reward
             done = True
         elif self._is_goal(new_position):
-            reward = incident_penalty + action_penalty + sampled_days_past
+            reward = incident_penalty + action_penalty + (self.time_reward_multiplicator * sampled_days_past)
             done = True
         elif not valid:
             reward = self.invalid_reward
             done = False
         else:
-            reward = incident_penalty + action_penalty + sampled_days_past
+            reward = incident_penalty + action_penalty + (self.time_reward_multiplicator * sampled_days_past)
             done = False
 
         self.timer += sampled_days_past
@@ -107,13 +107,13 @@ class TaskEnv2StepProbablisticTimePenalty(TaskEnv):
             reward = self.timeout_reward
             done = True
         elif self._is_goal(new_position):
-            reward = incident_penalty + action_penalty + sampled_days_past
+            reward = incident_penalty + action_penalty + (self.time_reward_multiplicator * sampled_days_past)
             done = True
         elif not valid:
             reward = self.invalid_reward
             done = False
         else:
-            reward = incident_penalty + action_penalty + sampled_days_past
+            reward = incident_penalty + action_penalty + (self.time_reward_multiplicator * sampled_days_past)
             done = False
 
         self.timer += sampled_days_past

@@ -62,6 +62,24 @@ class TaskEnv(gym.Env):
             'met kracht tegen- of vastgehouden': -2.0,
             'afzondering (deur op slot)': -2.0,
         }
+        # self.action_reward = {
+        #     'contact beeindigd/weggegaan': -1.0,
+        #     'client toegesproken/gesprek met client': -1.0,
+        #     'geen': -1.0,
+        #     'client afgeleid': -1.0,
+        #     'naar andere kamer/ruimte gestuurd': -1.0,
+        #     'met kracht tegen- of vastgehouden': -1.0,
+        #     'afzondering (deur op slot)': -1.0,
+        # }
+        # self.action_reward = {
+        #     'contact beeindigd/weggegaan': 0,
+        #     'client toegesproken/gesprek met client': 0,
+        #     'geen': 0,
+        #     'client afgeleid': 0,
+        #     'naar andere kamer/ruimte gestuurd': 0,
+        #     'met kracht tegen- of vastgehouden': 0,
+        #     'afzondering (deur op slot)': 0,
+        # }
 
         frequencies: pd.DataFrame = pd.read_csv(frequencies_file, index_col=0)
 
