@@ -226,22 +226,30 @@ importlib.reload(envs_prob)
 
 
 # env = TaskEnv(timeout_reward=-1, goal_reward=1, invalid_reward=-1, time_reward_multiplicator=.01)
-env = envs.TaskEnv(time_out=6, frequencies_file="../data/frequencies_final_3.csv")
+env = envs.OldTaskEnv(time_out=6, frequencies_file="../data/frequencies_final_3.csv")
+# env = envs.TaskEnv(time_out=6, frequencies_file="../data/frequencies_final_3.csv")
 # env = envs_prob.TaskEnvProbablisticTimePenalty(time_out=365, time_reward_multiplicator=0.01, frequencies_file="../data/frequencies_final_3.csv", time_probabilities_file="../data/prob_time_given_incident_action_reaction.json")
 # env = envs_prob.TaskEnv2StepProbablisticTimePenalty(time_out=365, time_reward_multiplicator=1, frequencies_file="../data/frequencies_final_3.csv", time_probabilities_file="../data/prob_time_given_incident_action.json", classification_pipeline="../data/logistic_regression_pipeline.pkl")
 # agent = agents.RandomAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
 # agent = agents.SarsaAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
-agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
-# agent = agents.ExpectedSarsaAgent(env=env, exploration_rate=0.01, learning_rate=.5, discount_factor=0.5)
+# agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
+agent = agents.ExpectedSarsaAgent(env=env, exploration_rate=0.01, learning_rate=.5, discount_factor=0.9)
 # agent = agents.PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
 # agent = agents.MostFrequentPolicyAgent(env=env, exploration_rate=None, learning_rate=None, discount_factor=None)
 
 rw = []
-for i in tqdm(range(5000)):
-    total_reward, last_state, agent = run_training_episode(agent, env)
-    rw.append(total_reward)
+rep = 10
+for j in range(rep):
+    arun = []
+    for i in tqdm(range(2000)):
+        total_reward, last_state, agent = run_training_episode(agent, env)
+        arun.append(total_reward)
+    env.reset()
+    rw.append(arun)
 # show_trained_agent(agent, env)
-sns.lineplot(gaussian_filter1d(rw, 50))
+
+for j in range(rep):
+    sns.lineplot(gaussian_filter1d(rw[j], 50))
 # 
 # %%
 # %% [markdown]
@@ -263,7 +271,7 @@ sns.lineplot(gaussian_filter1d(rw, 50))
 epsilons = [0.01, 0.1, 0.5, 0.9]
 alphas = [0.01, 0.1, 0.5, 0.9]
 gammas = [0.1, 0.5, 0.9]
-repeats = list(range(5))
+repeats = list(range(1))
 num_episodes = 1000
 
 all_params = list(it.product(epsilons, alphas, gammas, repeats))
