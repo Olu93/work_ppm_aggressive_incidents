@@ -83,7 +83,7 @@ def run_training_episode(agent: agents.TDAgent, env: envs.TaskEnv):
     while not done:
         next_action = agent.select_action(current_state) if not next_action else next_action
         next_state, reward, done, _ = env.step(next_action)
-        total_reward += reward / env.timer
+        total_reward += reward 
         # print(reward)
         next_action = agent.learn(current_state, next_action, next_state, reward, done)
         current_state = next_state
@@ -136,12 +136,15 @@ env = envs.TaskEnv(frequencies_file="../data/frequencies_final_3.csv")
 # agent = agents.ExpectedSarsaAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
 
 # %%
+np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 importlib.reload(envs)
 importlib.reload(agents)
+env.reset()
 agent = agents.PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
 for i in tqdm(range(1000)): 
     total_reward, lat_state, agent = run_training_episode(agent, env)
 # show_trained_agent(agent, env)
 agent.state_values
+
 #TODO: Reset tohe Q-Table
 # %%

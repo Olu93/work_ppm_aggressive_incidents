@@ -156,57 +156,125 @@ class MostFrequentPolicyAgent(TDAgent):
         return None
 
 
-# https://gibberblot.github.io/rl-notes/single-agent/MDPs.html
 class PolicyIterationAgent(TDAgent):
 
     def __init__(self, env: TaskEnv, exploration_rate: float,
-                 learning_rate: float, discount_factor: float):
+                 learning_rate: float, discount_factor: float, **kwargs):
         super().__init__(env, exploration_rate, learning_rate, discount_factor)
+        # self.q_table = np.random.uniform(size=(env.observation_space.n + 1, env.action_space.n))
         self.state_values = np.zeros(self.states.n+1)
+        self.max_iterations = kwargs.get('max_iterations')
         self.env = env
         self.policy_iteration()
 
-    def policy_evaluation(self, theta=0.01):
-        while True:
-            delta = 0.0
-            for state in range(self.states.n):
-                old_value = self.state_values[state]
-                action = self.select_action(state, True)
-                new_value = self.get_q_value(state, action)
-                self.state_values[state] = new_value
-                delta = max(delta, abs(old_value - new_value))
-            if delta < theta:
-                break
-
-    def policy_iteration(self, max_iterations=100, theta=0.001):
+    def policy_iteration(self, max_iterations=200):
         for i in range(1, max_iterations + 1):
             policy_changed = False
             self.policy_evaluation()
-            for state in range(self.states.n):
+            for state in range(self.states.n+1):
                 old_action = self.select_action(state, True)
+                best_value = self.get_state_value(state, old_action)
+                # best_value = -np.inf if best_value == 0 else best_value
+
+                best_action = old_action
                 for action in range(self.actions.n):
-                    new_value = self.get_q_value(state, action)
-                    self.q_table[state, action] = self.q_table[state, action] + self.alpha * new_value
-                new_action = self.select_action(state, True)
-                policy_changed = (
-                    True if new_action is not old_action else policy_changed
-                )
+                    new_value = self.get_state_value(state, action)
+                    if new_value > best_value:
+                        best_value = new_value
+                        best_action = action
+                self.q_table[state, best_action] = best_value
+                if best_action != old_action:
+                    policy_changed = True
             if not policy_changed:
                 return i
         return max_iterations
 
-    def get_q_value(self, state, action):
+
+    def policy_evaluation(self, theta=0.1, max_iter=100):
+        i = 0
+        while True:
+            delta = 0.0
+            
+            for state in range(self.states.n+1):
+                old_value = self.state_values[state]
+                action = self.select_action(state, True)
+                new_value = self.get_state_value(state, action)
+                self.state_values[state] = new_value
+                delta = max(delta, abs(old_value - new_value))
+            i += 1
+            if (delta < theta) or i > max_iter:
+                break
+
+
+    def get_state_value(self, state, action):
         q_value = 0 
-        for next_state in range(self.states.n+1):
-            probability = self.env.transition_probability(
-                        action, state, next_state)
-            reward = self.env.reward_function(
-                        state, action, next_state)
-            q_value += probability * (reward + (self.gamma * self.q_table[state, action]))
+
+        for next_state in range(self.states.n+1):          
+            probability = self.env.transition_probability(state, action, next_state)
+            reward = self.env.reward_function(state, action, next_state)
+            if self.env._is_goal(state):
+                q_value += probability * reward
+            else:
+                q_value += probability * ( reward + self.gamma * self.state_values[next_state])
+        
         return q_value
+
                     
     def learn(self, state, action, next_state, reward, done):
         return None
+
+
+# https://gibberblot.github.io/rl-notes/single-agent/MDPs.html
+# class PolicyIterationAgent(TDAgent):
+
+#     def __init__(self, env: TaskEnv, exploration_rate: float,
+#                  learning_rate: float, discount_factor: float):
+#         super().__init__(env, exploration_rate, learning_rate, discount_factor)
+#         self.state_values = np.zeros(self.states.n+1)
+#         self.env = env
+#         self.policy_iteration()
+
+#     def policy_evaluation(self, theta=0.01):
+#         while True:
+#             delta = 0.0
+#             for state in range(self.states.n):
+#                 old_value = self.state_values[state]
+#                 action = self.select_action(state, True)
+#                 new_value = self.get_q_value(state, action)
+#                 self.state_values[state] = new_value
+#                 delta = max(delta, abs(old_value - new_value))
+#             if delta < theta:
+#                 break
+
+#     def policy_iteration(self, max_iterations=100, theta=0.001):
+#         for i in range(1, max_iterations + 1):
+#             policy_changed = False
+#             self.policy_evaluation()
+#             for state in range(self.states.n):
+#                 old_action = self.select_action(state, True)
+#                 for action in range(self.actions.n):
+#                     new_value = self.get_q_value(state, action)
+#                     self.q_table[state, action] = self.q_table[state, action] + self.alpha * new_value
+#                 new_action = self.select_action(state, True)
+#                 policy_changed = (
+#                     True if new_action is not old_action else policy_changed
+#                 )
+#             if not policy_changed:
+#                 return i
+#         return max_iterations
+
+#     def get_q_value(self, state, action):
+#         q_value = 0 
+#         for next_state in range(self.states.n+1):
+#             probability = self.env.transition_probability(
+#                         action, state, next_state)
+#             reward = self.env.reward_function(
+#                         state, action, next_state)
+#             q_value += probability * (reward + (self.gamma * self.q_table[state, action]))
+#         return q_value
+                    
+#     def learn(self, state, action, next_state, reward, done):
+#         return None
 
     
 

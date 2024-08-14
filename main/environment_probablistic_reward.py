@@ -43,7 +43,7 @@ class TaskEnvProbablisticTimePenalty(TaskEnv):
 
 
     def reward_function(
-            self, action: int, state: int,
+            self, state: int, action: int,
             next_state: int, **kwargs) -> Tuple[int, float, bool, object]:
         
         past_days = kwargs.get('past_days')
@@ -75,7 +75,7 @@ class TaskEnvProbablisticTimePenalty(TaskEnv):
             # print(e)
             return stats.geom.rvs(self.time_probs["Other"]["Other"]["Other"], size=1)[0]
 
-    def transition_probability(self, action: int, state: int, next_state: int):
+    def transition_probability(self, state: int, action: int,  next_state: int):
         p = self.p_matrix[state, action, next_state]
         return p
 
@@ -117,7 +117,7 @@ class TaskEnv2StepProbablisticTimePenalty(TaskEnv):
         }
 
     def reward_function(
-            self, action: int, state: int,
+            self, state: int,  action: int,
             next_state: int, **kwargs) -> Tuple[int, float, bool, object]:
         
         past_days = kwargs.get('past_days')
@@ -143,7 +143,7 @@ class TaskEnv2StepProbablisticTimePenalty(TaskEnv):
         return reward
 
 
-    def transition_probability(self, action: int, state: int, next_state: int):
+    def transition_probability(self,  state: int, action: int, next_state: int):
         p = self.p_matrix[state, action, next_state]
         return p
 

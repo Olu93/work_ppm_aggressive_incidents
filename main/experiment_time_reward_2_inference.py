@@ -89,7 +89,7 @@ if __name__ == "__main__":
         # "../data/frequencies_final_7.csv",
     ]
     reward_fn = [
-        # "reward_bart",
+        "reward_bart",
         "reward_all_actions_the_same",
         # "reward_zero_tau",
         # "reward_zero_tau_all_actions_the_same",
@@ -111,9 +111,9 @@ if __name__ == "__main__":
             env.severity = severity
             env.action_reward = action_reward
 
-            e_agent = ExpectedSarsaAgent(env=env, exploration_rate=0.01, learning_rate=0.9, discount_factor=0.5)
-            q_agent = QAgent(env=env, exploration_rate=0.1, learning_rate=0.5, discount_factor=0.5)
-            s_agent = SarsaAgent(env=env, exploration_rate=0.01, learning_rate=0.01, discount_factor=0.5)
+            e_agent = ExpectedSarsaAgent(env=env, exploration_rate=0.5, learning_rate=0.9, discount_factor=0.5)
+            q_agent = QAgent(env=env, exploration_rate=0.1, learning_rate=0.01, discount_factor=0.9)
+            s_agent = SarsaAgent(env=env, exploration_rate=0.9, learning_rate=0.01, discount_factor=0.1)
             r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
             f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
 

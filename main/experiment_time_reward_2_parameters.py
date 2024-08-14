@@ -130,7 +130,7 @@ if __name__ == "__main__":
         # "../data/frequencies_final_7.csv",
     ]
     reward_fn = [
-        # "reward_bart",
+        "reward_bart",
         "reward_all_actions_the_same",
         # "reward_zero_tau",
         # "reward_zero_tau_all_actions_the_same",
