@@ -1,6 +1,6 @@
 import pandas as pd
 from environment import TaskEnv
-from agent import ExpectedSarsaAgent, MostFrequentPolicyAgent, QAgent, RandomAgent, SarsaAgent
+from agent import ExpectedSarsaAgent, MostFrequentPolicyAgent, PolicyIterationAgent, QAgent, RandomAgent, SarsaAgent
 import multiprocessing as mp
 from tqdm import tqdm
 import itertools as it
@@ -117,21 +117,22 @@ if __name__ == "__main__":
         SarsaAgent,
         QAgent,
         ExpectedSarsaAgent,
+        PolicyIterationAgent,
         # RandomAgent,
         # MostFrequentPolicyAgent,
     ]
     repeats = list(range(10))
     min_amount_incidents = [
-        "data/frequencies_final_1.csv",
-        "data/frequencies_final_3.csv",
+        "../data/frequencies_final_1.csv",
+        "../data/frequencies_final_3.csv",
         # "data/frequencies_final_5.csv",
         # "data/frequencies_final_7.csv",
     ]
     reward_fn = [
         "reward_bart",
         "reward_all_actions_the_same",
-        "reward_zero_tau",
-        "reward_zero_tau_all_actions_the_same",
+        # "reward_zero_tau",
+        # "reward_zero_tau_all_actions_the_same",
     ]
     episodes = [1000]
 
