@@ -95,22 +95,22 @@ def map_reward_func(type_of_reward):
 if __name__ == "__main__":
     min_inc = "data/frequencies_final_1.csv"
     min_amount_incidents = [
-        "data/frequencies_final_1.csv",
-        # "data/frequencies_final_3.csv",
+        "../data/frequencies_final_1.csv",
+        "../data/frequencies_final_3.csv",
         # "data/frequencies_final_5.csv",
         # "data/frequencies_final_7.csv",
     ]
     reward_fn = [
-        # "reward_bart",
+        "reward_bart",
         "reward_all_actions_the_same",
         # "reward_zero_tau",
         # "reward_zero_tau_all_actions_the_same",
     ]
     episodes = 100
     # episodes = 10
-    episodesT = 1000
+    episodesT = 100
     # episodesT = 100
-    repeats = list(range(1000))
+    repeats = list(range(10000))
     # repeats = list(range(3))
     all_results = []
     
@@ -138,7 +138,8 @@ if __name__ == "__main__":
                     _, _, e_agent = run_training_episode(e_agent, env)
                     r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
                     f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
-                agents = [s_agent, q_agent, e_agent, r_agent, f_agent]
+
+                agents = [p_agent, s_agent, q_agent, e_agent, r_agent, f_agent]
                 for k in range(episodesT):
                     initial_starting_point = env.reset()
                     for agent in agents:
