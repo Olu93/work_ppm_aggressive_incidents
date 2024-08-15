@@ -12,14 +12,7 @@ def run_training_episode(agent: TDAgent, env: TaskEnv):
     current_state = env.reset()
     total_reward = 0
     while not done:
-        next_action = agent.select_action(current_state) if not next_action else next_action
-        new_state = env._get_next_state(env.current_position, next_action)
-        next_state2, reward2, done2, _2 = env.step2(env.current_position, next_action,new_state)
-        next_state3, reward3, done3, _3 = env.step3(env.current_position, next_action,new_state)
-        if reward3 != reward2 or done3 != done2:
-            next_state2, reward2, done2, _2 = env.step2(env.current_position, next_action,new_state)
-            next_state3, reward3, done3, _3 = env.step3(env.current_position, next_action,new_state)
-            
+        next_action = agent.select_action(current_state) if not next_action else next_action            
         next_state, reward, done, _ = env.step(next_action)
         total_reward += reward / env.timer
         # print(reward)

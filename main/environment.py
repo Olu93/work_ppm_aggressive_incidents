@@ -121,60 +121,6 @@ class TaskEnv(gym.Env):
         self.current_position = self.observation_space.sample()
         self.episode_actions = []
 
-
-    def step2(self, current_position:int, action: int, new_position: int) -> Tuple[Tuple[int, int], float, bool, object]:
-        motion = self.motions[action]
-
-        valid = self._is_valid(current_position, action)
-        # self.episode_actions.append((action, "VALID" if valid else "INVALID"))
-
-        incident_penalty = self.severity[self.idx2inc[new_position]]
-        action_penalty = self.action_reward[self.idx2act[action]]
-
-        step_sequence = (self.idx2inc[current_position] , self.idx2act[action], self.idx2inc[new_position])
-        if valid:
-            # TODO: Need to define validity!!!
-            pass
-
-        if self._is_timeout():
-            reward = self.timeout_reward
-            done = True
-        elif self._is_goal(new_position):
-            reward = incident_penalty + action_penalty
-            done = True
-        elif not valid:
-            reward = self.invalid_reward
-            done = False
-        else:
-            reward = incident_penalty + action_penalty
-            # reward = reward - (self.timer * self.time_reward_multiplicator)
-            done = False
- 
-        # self.timer += 1
-        # self.current_position = new_position
-
-        return new_position, reward, done, {"step_sequence":step_sequence}
-
-    def step3(self, current_position:int, action: int, next_state: int) -> Tuple[int, float, bool, object]:
-        current_state = current_position
-
-        valid = self._is_valid(current_state, action)
-        self.episode_actions.append((action, "VALID" if valid else "INVALID"))
-        # next_state = self._get_next_state(current_state, action)
-
-        step_sequence = (self.idx2inc[current_state],
-                         self.idx2act[action], self.idx2inc[next_state])
-
-        reward = self.reward_function(current_state, action, next_state)
-        done = True if self._is_goal(next_state) or self._is_timeout() else False
-        
-        # self.timer += 1
-        # self.current_position = next_state
-
-        return next_state, reward, done, {
-            "step_sequence": step_sequence
-        }
-
   
     def step(self, action: int) -> Tuple[int, float, bool, object]:
         current_state = self.current_position
