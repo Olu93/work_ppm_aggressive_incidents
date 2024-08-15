@@ -62,24 +62,6 @@ class TaskEnv(gym.Env):
             'met kracht tegen- of vastgehouden': -2.0,
             'afzondering (deur op slot)': -2.0,
         }
-        # self.action_reward = {
-        #     'contact beeindigd/weggegaan': -1.0,
-        #     'client toegesproken/gesprek met client': -1.0,
-        #     'geen': -1.0,
-        #     'client afgeleid': -1.0,
-        #     'naar andere kamer/ruimte gestuurd': -1.0,
-        #     'met kracht tegen- of vastgehouden': -1.0,
-        #     'afzondering (deur op slot)': -1.0,
-        # }
-        # self.action_reward = {
-        #     'contact beeindigd/weggegaan': 0,
-        #     'client toegesproken/gesprek met client': 0,
-        #     'geen': 0,
-        #     'client afgeleid': 0,
-        #     'naar andere kamer/ruimte gestuurd': 0,
-        #     'met kracht tegen- of vastgehouden': 0,
-        #     'afzondering (deur op slot)': 0,
-        # }
 
         frequencies: pd.DataFrame = pd.read_csv(frequencies_file, index_col=0)
 
@@ -159,7 +141,7 @@ class TaskEnv(gym.Env):
 
         if self._is_timeout():
             reward = self.timeout_reward
-        elif self._is_goal(next_state):
+        elif self._is_goal(state) or self._is_goal(next_state):
             reward = incident_penalty + action_penalty
         elif not valid:
             reward = self.invalid_reward
@@ -168,33 +150,10 @@ class TaskEnv(gym.Env):
 
         return reward
 
-    # def reward_function(
-    #         self, state: int, action: int,
-    #         next_state: int, **kwargs) -> float:
-
-    #     valid = self._is_valid(state, action)
-
-    #     incident_penalty = self.severity[self.idx2inc[next_state]]
-    #     action_penalty = self.action_reward[self.idx2act[action]]
-
-    #     if valid:
-    #         # TODO: Need to define validity!!!
-    #         pass
-
-    #     if self._is_timeout():
-    #         reward = self.timeout_reward
-    #     elif self._is_goal(state) or self._is_goal(next_state):
-    #         reward = self.severity["Tau"] + action_penalty
-    #     elif not valid:
-    #         reward = self.invalid_reward
-    #     else:
-    #         reward = incident_penalty + action_penalty
-
-    #     return reward
 
     def transition_probability(self, state: int, action: int,  next_state: int):
         if self._is_goal(state):
-            return 1
+            return 0
         p = self.p_matrix[state, action, next_state]
         return p
 

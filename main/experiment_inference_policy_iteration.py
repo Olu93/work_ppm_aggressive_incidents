@@ -122,30 +122,30 @@ if __name__ == "__main__":
             env = TaskEnv(time_out=6, frequencies_file=min_inc)
             env.severity = severity
             env.action_reward = action_reward
-
+            env.reset()
             # s_agent = SarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
-            q_agent = QAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
+            # q_agent = QAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
             # e_agent = ExpectedSarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
-            r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
-            f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
-            # p_agent = PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
+            # r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
+            # f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
+            p_agent = PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
 
 
             for i in repeats:
                 for j in range(episodes):
                     # _, _, s_agent = run_training_episode(s_agent, env)
-                    _, _, q_agent = run_training_episode(q_agent, env)
+                    # _, _, q_agent = run_training_episode(q_agent, env)
                     # _, _, e_agent = run_training_episode(e_agent, env)
-                    # r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
+                    r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
                     # f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
 
                 agents = [
-                    # p_agent, 
+                    p_agent, 
                     # s_agent, 
-                    q_agent, 
+                    # q_agent, 
                     # e_agent, 
                     r_agent, 
-                    f_agent,
+                    # f_agent,
                 ]
                 for k in range(episodesT):
                     initial_starting_point = env.reset()

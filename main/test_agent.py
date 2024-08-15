@@ -140,11 +140,13 @@ np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 importlib.reload(envs)
 importlib.reload(agents)
 env.reset()
-# agent = agents.PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
-agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
+agent = agents.PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
+# agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
 for i in tqdm(range(1000)): 
     total_reward, lat_state, agent = run_training_episode(agent, env)
 # show_trained_agent(agent, env)
-
+print(agent.state_values)
+print("===================")
+print(agent.q_table)
 #TODO: Reset tohe Q-Table
 # %%

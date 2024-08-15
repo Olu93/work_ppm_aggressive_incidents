@@ -1,13 +1,16 @@
 from typing import Tuple
-from environment import TaskEnv
+# from environment import TaskEnv
+import importlib
+import environment as envs
 import numpy as np
 import random
 from abc import ABC, abstractmethod
+importlib.reload(envs)
 
 
 class TDAgent(ABC):
 
-    def __init__(self, env: TaskEnv, exploration_rate: float,
+    def __init__(self, env: envs.TaskEnv, exploration_rate: float,
                  learning_rate: float, discount_factor: float):
         self.epsilon = exploration_rate
         self.alpha = learning_rate
@@ -102,7 +105,7 @@ class ExpectedSarsaAgent(TDAgent):
 class RandomAgent(TDAgent):
 
     def __init__(self,
-                 env: TaskEnv,
+                 env: envs.TaskEnv,
                  exploration_rate: float = None,
                  learning_rate: float = None,
                  discount_factor: float = None) -> int:
@@ -134,7 +137,7 @@ class RandomAgent(TDAgent):
 class MostFrequentPolicyAgent(TDAgent):
 
     def __init__(self,
-                 env: TaskEnv,
+                 env: envs.TaskEnv,
                  exploration_rate: float = None,
                  learning_rate: float = None,
                  discount_factor: float = None) -> int:
@@ -158,27 +161,27 @@ class MostFrequentPolicyAgent(TDAgent):
 
 class PolicyIterationAgent(TDAgent):
 
-    def __init__(self, env: TaskEnv, exploration_rate: float,
+    def __init__(self, env: envs.TaskEnv, exploration_rate: float,
                  learning_rate: float, discount_factor: float, **kwargs):
         super().__init__(env, exploration_rate, learning_rate, discount_factor)
         # self.q_table = np.random.uniform(size=(env.observation_space.n + 1, env.action_space.n))
         self.state_values = np.zeros(self.states.n+1)
-        self.max_iterations = kwargs.get('max_iterations')
+        self.max_iterations = kwargs.get('max_iterations', 100)
         self.env = env
-        self.policy_iteration()
+        self.policy_iteration(self.max_iterations)
 
-    def policy_iteration(self, max_iterations=200):
+    def policy_iteration(self, max_iterations):
         for i in range(1, max_iterations + 1):
             policy_changed = False
             self.policy_evaluation()
             for state in range(self.states.n+1):
                 old_action = self.select_action(state, True)
-                best_value = self.get_state_value(state, old_action)
+                best_value = self.get_q_value(state, old_action)
                 # best_value = -np.inf if best_value == 0 else best_value
 
                 best_action = old_action
                 for action in range(self.actions.n):
-                    new_value = self.get_state_value(state, action)
+                    new_value = self.get_q_value(state, action)
                     if new_value > best_value:
                         best_value = new_value
                         best_action = action
@@ -198,7 +201,7 @@ class PolicyIterationAgent(TDAgent):
             for state in range(self.states.n+1):
                 old_value = self.state_values[state]
                 action = self.select_action(state, True)
-                new_value = self.get_state_value(state, action)
+                new_value = self.get_q_value(state, action)
                 self.state_values[state] = new_value
                 delta = max(delta, abs(old_value - new_value))
             i += 1
@@ -206,13 +209,13 @@ class PolicyIterationAgent(TDAgent):
                 break
 
 
-    def get_state_value(self, state, action):
+    def get_q_value(self, state, action):
         q_value = 0 
 
         for next_state in range(self.states.n+1):          
             probability = self.env.transition_probability(state, action, next_state)
             reward = self.env.reward_function(state, action, next_state)
-            if self.env._is_goal(state):
+            if self.env._is_goal(next_state):
                 q_value += probability * reward
             else:
                 q_value += probability * ( reward + self.gamma * self.state_values[next_state])
