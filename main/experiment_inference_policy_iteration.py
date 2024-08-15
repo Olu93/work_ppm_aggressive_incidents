@@ -1,18 +1,25 @@
 import pandas as pd
-from environment import TaskEnv
+from environment import OldTaskEnv, TaskEnv
 from agent import ExpectedSarsaAgent, MostFrequentPolicyAgent, PolicyIterationAgent, QAgent, RandomAgent, SarsaAgent, TDAgent
 import multiprocessing as mp
 from tqdm import tqdm
 import itertools as it
 
 
-def run_training_episode(agent, env):
+def run_training_episode(agent: TDAgent, env: TaskEnv):
     next_action = None
     done = False
     current_state = env.reset()
     total_reward = 0
     while not done:
         next_action = agent.select_action(current_state) if not next_action else next_action
+        new_state = env._get_next_state(env.current_position, next_action)
+        next_state2, reward2, done2, _2 = env.step2(env.current_position, next_action,new_state)
+        next_state3, reward3, done3, _3 = env.step3(env.current_position, next_action,new_state)
+        if reward3 != reward2 or done3 != done2:
+            next_state2, reward2, done2, _2 = env.step2(env.current_position, next_action,new_state)
+            next_state3, reward3, done3, _3 = env.step3(env.current_position, next_action,new_state)
+            
         next_state, reward, done, _ = env.step(next_action)
         total_reward += reward / env.timer
         # print(reward)
@@ -32,7 +39,7 @@ def run_real_episode(agent: TDAgent, env: TaskEnv):
     while not done:
         next_action = agent.select_action(current_state, True)
         next_state, reward, done, info = env.step(next_action)
-        total_reward += reward
+        total_reward += reward 
         current_state = next_state
         steps.append(info["step_sequence"])
     return total_reward, steps
@@ -101,16 +108,16 @@ if __name__ == "__main__":
         # "data/frequencies_final_7.csv",
     ]
     reward_fn = [
-        # "reward_bart",
-        "reward_all_actions_the_same",
+        "reward_bart",
+        # "reward_all_actions_the_same",
         # "reward_zero_tau",
         # "reward_zero_tau_all_actions_the_same",
     ]
-    episodes = 100
+    episodes = 1000
     # episodes = 10
     episodesT = 100
     # episodesT = 100
-    repeats = list(range(1000))
+    repeats = list(range(100))
     # repeats = list(range(3))
     all_results = []
     
@@ -124,25 +131,25 @@ if __name__ == "__main__":
             env.action_reward = action_reward
 
             # s_agent = SarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
-            # q_agent = QAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
+            q_agent = QAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
             # e_agent = ExpectedSarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
             r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
             f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
-            p_agent = PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
+            # p_agent = PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
 
 
             for i in repeats:
-                # for j in range(episodes):
-                #     _, _, s_agent = run_training_episode(s_agent, env)
-                #     _, _, q_agent = run_training_episode(q_agent, env)
-                #     _, _, e_agent = run_training_episode(e_agent, env)
-                #     r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
-                #     f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
+                for j in range(episodes):
+                    # _, _, s_agent = run_training_episode(s_agent, env)
+                    _, _, q_agent = run_training_episode(q_agent, env)
+                    # _, _, e_agent = run_training_episode(e_agent, env)
+                    # r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
+                    # f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
 
                 agents = [
-                    p_agent, 
+                    # p_agent, 
                     # s_agent, 
-                    # q_agent, 
+                    q_agent, 
                     # e_agent, 
                     r_agent, 
                     f_agent,
@@ -169,4 +176,4 @@ if __name__ == "__main__":
                 pbar.update(1)
 
     df_all_results = pd.DataFrame(all_results)
-    df_all_results.to_csv("../data/experiment_inference_policy_iteration.csv")
+    df_all_results.to_csv("../data/experiment_inference_policy_iteration_3.csv")

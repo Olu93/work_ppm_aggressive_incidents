@@ -1,0 +1,25 @@
+min_inc,rew_type,agent,Unnamed: 0,repetition,episode,total_reward,time
+../data/frequencies_final_1.csv,reward_all_actions_the_same,ExpectedSarsaAgent,9000000.0,4999.5,49.5,-3.370346,1.96191
+../data/frequencies_final_1.csv,reward_all_actions_the_same,MostFrequentPolicyAgent,9000002.0,4999.5,49.5,-3.106606,1.889031
+../data/frequencies_final_1.csv,reward_all_actions_the_same,PolicyIterationAgent,8999997.0,4999.5,49.5,-4.03611,2.100908
+../data/frequencies_final_1.csv,reward_all_actions_the_same,QAgent,8999999.0,4999.5,49.5,-3.368966,1.962235
+../data/frequencies_final_1.csv,reward_all_actions_the_same,RandomAgent,9000001.0,4999.5,49.5,-3.798983,2.046222
+../data/frequencies_final_1.csv,reward_all_actions_the_same,SarsaAgent,8999998.0,4999.5,49.5,-3.378494,1.959578
+../data/frequencies_final_1.csv,reward_bart,ExpectedSarsaAgent,3000000.0,4999.5,49.5,-1.638284,1.902528
+../data/frequencies_final_1.csv,reward_bart,MostFrequentPolicyAgent,3000002.0,4999.5,49.5,-1.242368,1.889534
+../data/frequencies_final_1.csv,reward_bart,PolicyIterationAgent,2999997.0,4999.5,49.5,-1.106545,1.842833
+../data/frequencies_final_1.csv,reward_bart,QAgent,2999999.0,4999.5,49.5,-1.600707,1.899577
+../data/frequencies_final_1.csv,reward_bart,RandomAgent,3000001.0,4999.5,49.5,-3.795755,2.046825
+../data/frequencies_final_1.csv,reward_bart,SarsaAgent,2999998.0,4999.5,49.5,-1.583768,1.900994
+../data/frequencies_final_3.csv,reward_all_actions_the_same,ExpectedSarsaAgent,21000000.0,4999.5,49.5,-12.286091,5.273745
+../data/frequencies_final_3.csv,reward_all_actions_the_same,MostFrequentPolicyAgent,21000002.0,4999.5,49.5,-12.36446,5.298988
+../data/frequencies_final_3.csv,reward_all_actions_the_same,PolicyIterationAgent,20999997.0,4999.5,49.5,-14.067036,5.746423
+../data/frequencies_final_3.csv,reward_all_actions_the_same,QAgent,20999999.0,4999.5,49.5,-12.305308,5.280723
+../data/frequencies_final_3.csv,reward_all_actions_the_same,RandomAgent,21000001.0,4999.5,49.5,-13.259428,5.49783
+../data/frequencies_final_3.csv,reward_all_actions_the_same,SarsaAgent,20999998.0,4999.5,49.5,-12.292141,5.241862
+../data/frequencies_final_3.csv,reward_bart,ExpectedSarsaAgent,15000000.0,4999.5,49.5,-9.643671,5.369589
+../data/frequencies_final_3.csv,reward_bart,MostFrequentPolicyAgent,15000002.0,4999.5,49.5,-8.575798,5.299828
+../data/frequencies_final_3.csv,reward_bart,PolicyIterationAgent,14999997.0,4999.5,49.5,-14.55486,5.596042
+../data/frequencies_final_3.csv,reward_bart,QAgent,14999999.0,4999.5,49.5,-9.624297,5.378545
+../data/frequencies_final_3.csv,reward_bart,RandomAgent,15000001.0,4999.5,49.5,-13.269713,5.494888
+../data/frequencies_final_3.csv,reward_bart,SarsaAgent,14999998.0,4999.5,49.5,-9.53531,5.377786

@@ -4,7 +4,6 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
     { "name": "Python Debugger: Module", "type": "debugpy", "request": "launch", "module": "main.agent" },
     {
       "name": "Parallel Experiment",
@@ -19,6 +18,14 @@
       "type": "debugpy",
       "request": "launch",
       "program": "experiment_inference.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/main"
+    },
+    {
+      "name": "Inference Experiment PI",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "experiment_inference_policy_iteration.py",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}/main"
     },
