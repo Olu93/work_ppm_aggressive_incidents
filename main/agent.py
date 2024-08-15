@@ -176,15 +176,8 @@ class PolicyIterationAgent(TDAgent):
             self.policy_evaluation()
             for state in range(self.states.n+1):
                 old_action = self.select_action(state, True)
-                best_value = self.get_q_value(state, old_action)
-                # best_value = -np.inf if best_value == 0 else best_value
-
-                # best_action = old_action
                 for action in range(self.actions.n):
                     new_value = self.get_q_value(state, action)
-                    # if new_value > best_value:
-                    #     best_value = new_value
-                    #     best_action = action
                     self.q_table[state, action] = new_value
                     best_action = self.select_action(state, True)
                 if best_action != old_action:
