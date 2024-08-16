@@ -123,21 +123,21 @@ if __name__ == "__main__":
             env.severity = severity
             env.action_reward = action_reward
 
-            # s_agent = SarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
-            # q_agent = QAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
-            # e_agent = ExpectedSarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
+            s_agent = SarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
+            q_agent = QAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
+            e_agent = ExpectedSarsaAgent(env=env, exploration_rate=0.1, learning_rate=0.2, discount_factor=0.2)
             r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
             f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
             p_agent = PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
 
 
             for i in repeats:
-                # for j in range(episodes):
-                #     _, _, s_agent = run_training_episode(s_agent, env)
-                #     _, _, q_agent = run_training_episode(q_agent, env)
-                #     _, _, e_agent = run_training_episode(e_agent, env)
-                #     r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
-                #     f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
+                for j in range(episodes):
+                    _, _, s_agent = run_training_episode(s_agent, env)
+                    _, _, q_agent = run_training_episode(q_agent, env)
+                    _, _, e_agent = run_training_episode(e_agent, env)
+                    r_agent = RandomAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
+                    f_agent = MostFrequentPolicyAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.1)
 
                 agents = [
                     p_agent, 
