@@ -5,7 +5,7 @@ from collections import Counter, defaultdict
 import io
 from tqdm import tqdm
 # %%
-df_mean_results = pd.read_csv('../data/experiment_inference.csv')
+df_mean_results = pd.read_pickle('../data/experiment_inference.pkl')
 df_mean_results
 # %%
 results_agg = (df_mean_results.drop(["steps"], axis=1).groupby([
@@ -32,11 +32,9 @@ results_agg.loc[("../data/frequencies_final_3.csv", "reward_bart")]
 # results_agg.loc[("data/frequencies_final_5.csv", "reward_all_actions_the_same")]
 # # %%
 # results_agg.loc[("data/frequencies_final_7.csv", "reward_all_actions_the_same")]
- # %%
-df_mean_results["steps"] = df_mean_results["steps"].map(ast.literal_eval)
-df_mean_results
+
 # %%
-agent = "QAgent"
+agent = "RandomAgent"
 def get_counts(df_mean_results, agent):
     q_results = df_mean_results[(df_mean_results["agent"]==agent) & (df_mean_results["min_inc"] == "../data/frequencies_final_3.csv") & (df_mean_results["rew_type"] == "reward_all_actions_the_same")]
     transitions = q_results["steps"].explode().tolist()
