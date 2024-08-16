@@ -179,7 +179,7 @@ class PolicyIterationAgent(TDAgent):
                 for action in range(self.actions.n):
                     new_value = self.get_q_value(state, action)
                     self.q_table[state, action] = new_value
-                    best_action = self.select_action(state, True)
+                best_action = self.select_action(state, True)
                 if best_action != old_action:
                     policy_changed = True
             if not policy_changed:
