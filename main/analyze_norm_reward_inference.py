@@ -47,19 +47,17 @@ def get_counts(df_mean_results, agent):
 cnt_t, cnt_r, cnt_x = get_counts(df_mean_results, agent)
 cnt_t
 # %%
-with io.open(f'../data/res_analysis_transitions_{agent}.txt', 'w') as f:
-    for transition, cnt in tqdm(cnt_t.most_common()):
-        f.write(f"Count {cnt} | {transition}\n")
-print("done")
-# %%
-with io.open(f'../data/res_analysis_epochs_{agent}.txt', 'w') as f:
-    for epoch_run, cnt in tqdm(cnt_x.most_common()):
-        f.write(f"Count {cnt} | {' -> '.join([str(x) for x in epoch_run])}\n")
-print("done")
-# %%
-with io.open(f'../data/res_analysis_reactions_{agent}.txt', 'w') as f:
-    for reaction, cnt in tqdm(cnt_r.most_common()):
-        f.write(f"Count {cnt} | {reaction}\n")
+for agent in ["RandomAgent", "MostFrequentPolicyAgent", "PolicyIterationAgent", "QAgent", "SarsaAgent"]:
+    cnt_t, cnt_r, cnt_x = get_counts(df_mean_results, agent)
+    with io.open(f'../data/res_analysis_transitions_{agent}.txt', 'w') as f:
+        for transition, cnt in tqdm(cnt_t.most_common()):
+            f.write(f"Count {cnt} | {transition}\n")
+    with io.open(f'../data/res_analysis_epochs_{agent}.txt', 'w') as f:
+        for epoch_run, cnt in tqdm(cnt_x.most_common()):
+            f.write(f"Count {cnt} | {' -> '.join([str(x) for x in epoch_run])}\n")
+    with io.open(f'../data/res_analysis_reactions_{agent}.txt', 'w') as f:
+        for reaction, cnt in tqdm(cnt_r.most_common()):
+            f.write(f"Count {cnt} | {reaction}\n")
 print("done")
 
 # %%

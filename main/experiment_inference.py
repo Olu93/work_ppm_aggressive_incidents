@@ -1,4 +1,6 @@
 from collections import defaultdict
+import io
+import json
 import pandas as pd
 import environment as envs
 from agent import ExpectedSarsaAgent, MostFrequentPolicyAgent, PolicyIterationAgent, QAgent, RandomAgent, SarsaAgent, TDAgent
@@ -96,14 +98,15 @@ def map_reward_func(type_of_reward):
     return severity, action_rewards
 
 
-def run_stage_3(timeout, episodes, Env, all_agents, min_inc, rew_type, best_agent_collection, repetition):
+def run_stage_3(Env, timeout , all_agents, best_agent_collection, min_inc, rew_type, repetition, episodes):
     env = Env(time_out=timeout, frequencies_file=min_inc)
     initial_starting_point = env.reset()
+    partial_results = []
     for k in range(episodes):
         for Agent in all_agents:
             agent = best_agent_collection[min_inc][rew_type][Agent]['agent']
             total_reward, steps = run_real_episode(agent, env)
-            yield {
+            partial_results.append({
                         "repetition": repetition,
                         "episode": k,
                         "agent": agent.__class__.__name__,
@@ -112,22 +115,28 @@ def run_stage_3(timeout, episodes, Env, all_agents, min_inc, rew_type, best_agen
                         "total_reward": total_reward,
                         "steps": steps,
                         "time": len(steps),
-                    }
+                    }) 
             env.reset()
             env.current_position = initial_starting_point
+    return partial_results
+
+def wrapper_for_experiment_stage3(params):
+    time_out, episodes_stage_3, Env, all_agents, min_inc, rew_type, best_agent_collection, repetition = params
+    return run_stage_3(Env, time_out, all_agents, min_inc, rew_type, best_agent_collection, repetition, episodes_stage_3)
+
 
 if __name__ == "__main__":
 
     TIME_OUT = 6
 
     min_amount_incidents = [
-        # "../data/frequencies_final_1.csv",
+        "../data/frequencies_final_1.csv",
         "../data/frequencies_final_3.csv",
         # "data/frequencies_final_5.csv",
         # "data/frequencies_final_7.csv",
     ]
     reward_fn = [
-        # "reward_bart",
+        "reward_bart",
         "reward_all_actions_the_same",
         # "reward_zero_tau",
         # "reward_zero_tau_all_actions_the_same",
@@ -136,29 +145,29 @@ if __name__ == "__main__":
     episodes_stage_2 = 100
     episodes_stage_3 = 100
     repeats_stage_1 = list(range(3))
-    repeats_stage_2 = list(range(100))
-    repeats_stage_3 = list(range(3))
+    repeats_stage_2 = list(range(1000))
+    repeats_stage_3 = list(range(10000))
     # repeats = list(range(3))
     all_results = []
 
     Env = envs.TaskEnv
 
     all_agent_params = {
-        # SarsaAgent: {
-        #     "exploration_rate":0.1,
-        #     "learning_rate":0.2,
-        #     "discount_factor":0.2,
-        # },
-        # QAgent: {
-        #     "exploration_rate":0.1,
-        #     "learning_rate":0.2,
-        #     "discount_factor":0.2,
-        # },
-        # ExpectedSarsaAgent: {
-        #     "exploration_rate":0.1,
-        #     "learning_rate":0.2,
-        #     "discount_factor":0.2,
-        # },
+        SarsaAgent: {
+            "exploration_rate":0.1,
+            "learning_rate":0.1,
+            "discount_factor":0.2,
+        },
+        QAgent: {
+            "exploration_rate":0.1,
+            "learning_rate":0.1,
+            "discount_factor":0.2,
+        },
+        ExpectedSarsaAgent: {
+            "exploration_rate":0.1,
+            "learning_rate":0.1,
+            "discount_factor":0.2,
+        },
         RandomAgent: {
             "exploration_rate":0,
             "learning_rate":0,
@@ -169,13 +178,13 @@ if __name__ == "__main__":
             "learning_rate":0,
             "discount_factor":0,
         },
-        # PolicyIterationAgent: {
-        #     "exploration_rate":0.0,
-        #     "learning_rate":0.0,
-        #     "discount_factor":0.9,
-        # },
+        PolicyIterationAgent: {
+            "exploration_rate":0.0,
+            "learning_rate":0.0,
+            "discount_factor":0.9,
+        },
     }
-    all_agents = all_agent_params.keys()
+    all_agents = list(all_agent_params.keys())
 
     # NOTE: Stage 1 trains the agents
     all_params_stage1 = list(it.product(min_amount_incidents, reward_fn, repeats_stage_1, all_agents))
@@ -215,12 +224,19 @@ if __name__ == "__main__":
             best_agent_collection[min_inc][rew_type][Agent]["agent"] = best_agent
             best_agent_collection[min_inc][rew_type][Agent]["last_reward"] = best_value
             print("Done")
-
+    # best_agent_collection = json.loads(json.dumps(best_agent_collection))
     # Stage 3: Validation
     all_results = []
+
+
+    all_parallel_params = [(Env, TIME_OUT, all_agents, best_agent_collection, *pms, episodes_stage_3) for pms in all_params_stage3]
+    
+    # with mp.Pool(8) as p: 
+    #     for results in p.imap_unordered(wrapper_for_experiment_stage3, tqdm(all_parallel_params, total=len(all_parallel_params))):
+    #         all_results.append(results)
     for min_inc, rew_type, repetition in tqdm(all_params_stage3):
         # NOTE: env is initialized here so that every repeat has a different starting point but not every episode
-        for res in run_stage_3(TIME_OUT, episodes_stage_3, Env, all_agents, min_inc, rew_type, best_agent_collection, repetition):
+        for res in run_stage_3(Env, TIME_OUT, all_agents, best_agent_collection, min_inc, rew_type, repetition, episodes_stage_3):
             all_results.append(res)
 
     df_all_results = pd.DataFrame(all_results)

@@ -114,7 +114,7 @@ def map_reward_func(type_of_reward):
 if __name__ == "__main__":
     epsilons = [0.01, 0.1, 0.5, 0.9]
     alphas = [0.01, 0.1, 0.5, 0.9]
-    gammas = [0.1, 0.5, 0.9]
+    gammas = [0.01, 0.1, 0.5, 0.9]
     agents = [
         SarsaAgent,
         QAgent,
@@ -130,7 +130,7 @@ if __name__ == "__main__":
         # "../data/frequencies_final_7.csv",
     ]
     reward_fn = [
-        "reward_bart",
+        # "reward_bart",
         "reward_all_actions_the_same",
         # "reward_zero_tau",
         # "reward_zero_tau_all_actions_the_same",
