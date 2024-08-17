@@ -87,7 +87,7 @@ class TaskEnvProbablisticTimePenalty(TaskEnv):
 # ===============================================================================
 
 class TaskEnv2StepProbablisticTimePenalty(TaskEnv):
-    def __init__(self, time_out: int = 6, timeout_reward=-1, goal_reward=1, invalid_reward=-1, time_reward_multiplicator=0.01, frequencies_file=None, time_probabilities_file=None, classification_pipeline=None):
+    def __init__(self, time_out: int = 6, timeout_reward=-1, goal_reward=1, invalid_reward=-1, time_reward_multiplicator=0.1, frequencies_file=None, time_probabilities_file=None, classification_pipeline=None):
         super().__init__(time_out, timeout_reward, goal_reward, invalid_reward, time_reward_multiplicator, frequencies_file)
         self.time_probs = json.load(io.open(time_probabilities_file, 'r'))
         self.next_state_classification_pipeline = joblib.load(classification_pipeline)
@@ -107,7 +107,7 @@ class TaskEnv2StepProbablisticTimePenalty(TaskEnv):
                          self.idx2act[action], self.idx2inc[next_state])
 
         reward = self.reward_function(current_state, action, next_state, past_days=days_elapsed)
-        done = True if self._is_goal(next_state) else False
+        done = True if self._is_goal(next_state) or self._is_timeout() else False
         
         self.timer += days_elapsed
         self.current_position = next_state

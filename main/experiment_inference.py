@@ -145,8 +145,8 @@ if __name__ == "__main__":
     episodes_stage_2 = 100
     episodes_stage_3 = 100
     repeats_stage_1 = list(range(3))
-    repeats_stage_2 = list(range(1000))
-    repeats_stage_3 = list(range(10000))
+    repeats_stage_2 = list(range(100))
+    repeats_stage_3 = list(range(1000))
     # repeats = list(range(3))
     all_results = []
 
@@ -209,7 +209,7 @@ if __name__ == "__main__":
                 agent_performance_results_per_run.append(last_reward)
             agent_performance_results.append(np.mean(agent_performance_results_per_run))
         training_results[min_inc][rew_type][Agent][agent_number]["agent"] = agent
-        training_results[min_inc][rew_type][Agent][agent_number]["last_reward"] = np.mean(agent_performance_results_per_run)
+        training_results[min_inc][rew_type][Agent][agent_number]["last_reward"] = np.mean(agent_performance_results)
  
     # Stage 2: Selection
     best_agent_collection = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))

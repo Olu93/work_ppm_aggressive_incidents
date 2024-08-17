@@ -154,7 +154,7 @@ env.reset()
 def run_real_episode(agent: agents.TDAgent, env: envs.TaskEnv):
     next_action = None
     done = False
-    current_state = env.current_position
+    current_state = env.reset()
     total_reward = 0
     while not done:
         next_action = agent.select_action(current_state, True)
@@ -218,7 +218,7 @@ def show_trained_agent(agent: agents.TDAgent, env: envs.TaskEnv):
 
 
 # env = TaskEnv(timeout_reward=-1, goal_reward=1, invalid_reward=-1, time_reward_multiplicator=.01)
-env = envs.TaskEnv(frequencies_file="data/frequencies_final_3.csv")
+env = envs.TaskEnv(frequencies_file="../data/frequencies_final_3.csv")
 # agent = agents.RandomAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
 # agent = agents.SarsaAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
 agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
@@ -226,6 +226,38 @@ agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount
 for i in tqdm(range(3000)):
     total_reward, last_state, agent = run_training_episode(agent, env)
 show_trained_agent(agent, env)
+# %%
+res = []
+res2 = []
+for j in range(5):
+    env.reset()
+    agent = agents.QAgent(env=env, exploration_rate=0.01, learning_rate=0.1, discount_factor=0.1)
+    for i in tqdm(range(10000)):
+        total_reward, last_state, agent = run_training_episode(agent, env)
+        res.append({
+            "episode":i,
+            "run": j,
+            "reward":total_reward,
+        })
+    env.reset()
+    for i in range(100):
+        total_reward = run_real_episode(agent, env)
+        res2.append({
+            "episode":i,
+            "run": j,
+            "reward":total_reward,
+        })
+
+# %%
+res_df = pd.DataFrame(res)
+for run, gr_df in res_df.groupby('run'):
+    plt.plot(gr_df["episode"], gaussian_filter1d(gr_df["reward"], 10))
+
+# %%
+res_df2 = pd.DataFrame(res2)
+for run, gr_df in res_df2.groupby('run'):
+    plt.plot(gr_df["episode"], gr_df["reward"])
+
 
 # %% [markdown]
 #  ## 3 Play with parameters and analyse results
@@ -319,15 +351,16 @@ for e, a, g, r in tqdm(all_params):
                 "total_reward": reward_f_agent,
             }
         )
-
+# %%
 df_all_results = pd.DataFrame(all_results)
 df_mean_results = df_all_results.groupby(["agent", "epsilon", "alpha", "gamma", "episode"]).mean().drop("repeat", axis=1).reset_index()
-df_mean_results.sort_values("total_reward", ascending=False).groupby(["agent", "epsilon", "alpha", "gamma"]).mean().reset_index().drop("episode", axis=1)
+df_mean_results_ = df_all_results.groupby(["agent", "epsilon", "alpha", "gamma", "episode"]).agg(["mean", "std"]).drop("repeat", axis=1).reset_index()
+df_mean_results_.sort_values(("total_reward", "mean"), ascending=False)#.groupby(["agent", "epsilon", "alpha", "gamma"]).mean().reset_index().drop("episode", axis=1)
 
 # %%
 fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(25, 15))
 
-smooth_factor = 20
+smooth_factor = 10
 tmp = df_mean_results  # [df_mean_results.agent.isin(["SARSA", "QLearn", "ESARSA", "Random",])]
 all_labels = set()
 for (e, a, g), df in df_mean_results.groupby(["epsilon", "alpha", "gamma"]):

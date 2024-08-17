@@ -23,8 +23,18 @@ df = df_original.copy()[cols_all]
 df[col_aao_mod] = df[cols_all][col_agent_action_orig].str.split(';')
 df = df.explode(col_aao_mod).drop(columns=col_agent_action_orig)
 df = df.dropna(subset=[col_aao_mod, col_env_reaction_days], how='any')
+df[col_env_reaction_days] = (df[col_env_reaction_days] / 10).astype(int)
 df[col_aao_mod] = df[col_aao_mod].str.strip()
 df[col_aao_mod] = df[col_aao_mod].fillna('geen').replace('nan', 'geen') 
+df[col_aao_mod] = df[col_aao_mod].replace({
+    "client toegesproken/gesprek met client": "Talk with client",
+    "contact beeindigd/weggegaan":"Contact terminated",
+    "client afgeleid":"Client distracted",
+    "geen":"No measure",
+    "met kracht tegen- of vastgehouden":"Hold with force",
+    "naar andere kamer/ruimte gestuurd":"Send to other room",
+    "afzondering (deur op slot)":"Seclusion",
+})
 df
 # %%
 def mse_cdf(empirical_data, dist, params):
@@ -40,7 +50,7 @@ def log_likelihood(empirical_data, dist, params):
 
 def plot_gamma(ax:Axes, t, x, idx, num):
     fit_alpha, fit_loc, fit_beta = stats.gamma.fit(t)
-    ax.plot(x, stats.gamma.pdf(x, a=fit_alpha, loc=fit_loc, scale=fit_beta), 'r-', lw=2, label=f'Gamma PDF\n $\\alpha$={fit_alpha:.2f}\n loc={fit_loc:.2f}\n $\\beta=${fit_beta:.2f}')
+    ax.plot(x, stats.gamma.pdf(x, a=fit_alpha, loc=fit_loc, scale=fit_beta), 'r-', lw=2, label=f'Gamma PDF\n $\\alpha$={fit_alpha:.3f}\n loc={fit_loc:.3f}\n $\\beta=${fit_beta:.3f}')
     ax.hist(t, density=True, bins='auto', histtype='stepfilled', alpha=0.2)
     ax.legend()
     mse = mse_cdf(t, stats.gamma, (fit_alpha, fit_loc, fit_beta))
@@ -52,7 +62,7 @@ def plot_geom(ax:Axes, t, x, idx, num):
         ll = np.sum(dist.logpmf(empirical_data, *params))
         return ll    
     fit_p, fit_x =  1 / np.mean(t), np.arange(1, np.max(t) + 1)
-    ax.plot(fit_x, stats.geom.pmf(fit_x, fit_p), 'r-', lw=2, label=f'Geometric PMF\np={fit_p:.2f}')
+    ax.plot(fit_x, stats.geom.pmf(fit_x, fit_p), 'r-', lw=2, label=f'Geometric PMF\np={fit_p:.3f}')
     ax.hist(t, density=True, bins='auto', histtype='stepfilled', alpha=0.2)
     ax.legend()
     mse = mse_cdf(t, stats.geom, (fit_p, ))
@@ -62,7 +72,7 @@ def plot_geom(ax:Axes, t, x, idx, num):
 def plot_exp(ax:Axes, t, x, idx, num):
     fit_loc, fit_scale = stats.expon.fit(t)
     lambda_exp = 1/fit_scale
-    ax.plot(x, stats.expon.pdf(x, loc=fit_loc, scale=fit_scale), 'r-', lw=2, label=f'Exponential PDF\nlambda={lambda_exp:.2f}')
+    ax.plot(x, stats.expon.pdf(x, loc=fit_loc, scale=fit_scale), 'r-', lw=2, label=f'Exponential PDF\nlambda={lambda_exp:.3f}')
     ax.hist(t, density=True, bins='auto', histtype='stepfilled', alpha=0.2)
     ax.legend()
     mse = mse_cdf(t, stats.expon, (fit_loc, fit_scale))
@@ -71,7 +81,7 @@ def plot_exp(ax:Axes, t, x, idx, num):
 
 def plot_weibull(ax:Axes, t, x, idx, num):
     shape_weibull, loc_weibull, scale_weibull = stats.weibull_min.fit(t, floc=0)
-    ax.plot(x, stats.weibull_min.pdf(x, shape_weibull, loc=loc_weibull, scale=scale_weibull), 'r-', lw=2, label=f'Weibull PDF\nshape={shape_weibull:.2f}, scale={scale_weibull:.2f}')
+    ax.plot(x, stats.weibull_min.pdf(x, shape_weibull, loc=loc_weibull, scale=scale_weibull), 'r-', lw=2, label=f'Weibull PDF\nshape={shape_weibull:.3f}\nscale={scale_weibull:.3f}')
     ax.hist(t, density=True, bins='auto', histtype='stepfilled', alpha=0.2)
     ax.legend()
     mse = mse_cdf(t, stats.weibull_min, (shape_weibull, loc_weibull, scale_weibull))
@@ -106,7 +116,7 @@ new_df = df.copy()
 new_df.loc[(new_df[cols_important].sum(axis=1)).isin(other_groups[cols_important].sum(axis=1)), cols_important] = "Other"
 new_df
 # %%
-groups = list(new_df.groupby(cols_important))
+groups = list(new_df.groupby(cols_important))[:10]
 gamma_metrics =  []
 geom_metrics =  []
 exp_metrics =  []
@@ -114,7 +124,8 @@ weibull_metrics =  []
 for idx, gdf in groups:
     # if len(gdf) < min_cnt:
     #     continue
-    fig, ax = plt.subplots(1, 4, figsize=(20, 5))
+    fig, ax = plt.subplots(2, 2, figsize=(10, 7))
+    ax = ax.flatten()
     t = gdf[col_env_reaction_days]
     x = np.linspace(0, np.max(t), 100)
     gamma_metrics.append(plot_gamma(ax[0], t, x, idx, len(gdf)))

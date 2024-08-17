@@ -12,7 +12,7 @@ results_agg = (df_mean_results.drop(["steps"], axis=1).groupby([
             "min_inc",
             "rew_type",
             "agent",
-        ]).mean())
+        ]).agg(["mean", "std"]))
 results_agg
 
     # best_configs.to_csv("experiment_best_params.csv")
@@ -35,8 +35,8 @@ results_agg.loc[("../data/frequencies_final_3.csv", "reward_bart")]
 
 # %%
 agent = "RandomAgent"
-def get_counts(df_mean_results, agent):
-    q_results = df_mean_results[(df_mean_results["agent"]==agent) & (df_mean_results["min_inc"] == "../data/frequencies_final_3.csv") & (df_mean_results["rew_type"] == "reward_all_actions_the_same")]
+def get_counts(df_mean_results, agent, history, rew_type):
+    q_results = df_mean_results[(df_mean_results["agent"]==agent) & (df_mean_results["min_inc"] == history) & (df_mean_results["rew_type"] == rew_type)]
     transitions = q_results["steps"].explode().tolist()
     reactions = [t[:2] for t in transitions]
     cnt_t = Counter(transitions)
@@ -47,17 +47,29 @@ def get_counts(df_mean_results, agent):
 cnt_t, cnt_r, cnt_x = get_counts(df_mean_results, agent)
 cnt_t
 # %%
+experiments = [
+     "../data/frequencies_final_1.csv",
+     "../data/frequencies_final_3.csv"
+]
+
+rew_types = [
+"reward_all_actions_the_same",
+"reward_bart"
+]
 for agent in ["RandomAgent", "MostFrequentPolicyAgent", "PolicyIterationAgent", "QAgent", "SarsaAgent"]:
-    cnt_t, cnt_r, cnt_x = get_counts(df_mean_results, agent)
-    with io.open(f'../data/res_analysis_transitions_{agent}.txt', 'w') as f:
-        for transition, cnt in tqdm(cnt_t.most_common()):
-            f.write(f"Count {cnt} | {transition}\n")
-    with io.open(f'../data/res_analysis_epochs_{agent}.txt', 'w') as f:
-        for epoch_run, cnt in tqdm(cnt_x.most_common()):
-            f.write(f"Count {cnt} | {' -> '.join([str(x) for x in epoch_run])}\n")
-    with io.open(f'../data/res_analysis_reactions_{agent}.txt', 'w') as f:
-        for reaction, cnt in tqdm(cnt_r.most_common()):
-            f.write(f"Count {cnt} | {reaction}\n")
+    for history in experiments:
+        for rew_type in rew_types:
+            h = history.split("/")[-1].split(".")[0]
+            cnt_t, cnt_r, cnt_x = get_counts(df_mean_results, agent, history, rew_type)
+            with io.open(f'../data/res_analysis_transitions_{agent}_{rew_type}_{h}.txt', 'w') as f:
+                for transition, cnt in tqdm(cnt_t.most_common()):
+                    f.write(f"Count {cnt} | {transition}\n")
+            with io.open(f'../data/res_analysis_epochs_{agent}_{rew_type}_{h}.txt', 'w') as f:
+                for epoch_run, cnt in tqdm(cnt_x.most_common()):
+                    f.write(f"Count {cnt} | {' -> '.join([str(x) for x in epoch_run])}\n")
+            with io.open(f'../data/res_analysis_reactions_{agent}_{rew_type}_{h}.txt', 'w') as f:
+                for reaction, cnt in tqdm(cnt_r.most_common()):
+                    f.write(f"Count {cnt} | {reaction}\n")
 print("done")
 
 # %%

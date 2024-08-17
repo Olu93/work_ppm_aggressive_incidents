@@ -22,10 +22,10 @@
       "cwd": "${workspaceFolder}/main"
     },
     {
-      "name": "Inference Experiment PI",
+      "name": "Inference Experiment Probablistic",
       "type": "debugpy",
       "request": "launch",
-      "program": "experiment_inference_policy_iteration.py",
+      "program": "experiment_time_reward_2_inference.py",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}/main"
     },
