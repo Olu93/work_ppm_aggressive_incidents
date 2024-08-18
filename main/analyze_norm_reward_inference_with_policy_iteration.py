@@ -54,7 +54,7 @@ def get_counts(df_mean_results, agent, history, rew_type):
 # cnt_t
 # %%
 experiments = [
-     "../data/frequencies_final_1.csv",
+    #  "../data/frequencies_final_1.csv",
      "../data/frequencies_final_3.csv"
 ]
 
@@ -62,7 +62,7 @@ rew_types = [
 # "reward_all_actions_the_same",
 "reward_bart"
 ]
-for agent in ["PolicyIterationAgent", "QAgent", "SarsaAgent"]:
+for agent in ["MostFrequentPolicyAgent","PolicyIterationAgent", "QAgent", "SarsaAgent"]:
     for history in experiments:
         for rew_type in rew_types:
             h = history.split("/")[-1].split(".")[0]

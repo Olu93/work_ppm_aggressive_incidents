@@ -65,10 +65,11 @@ experiments = [
 ]
 
 rew_types = [
-"reward_all_actions_the_same",
-# "reward_bart"
+# "reward_all_actions_the_same",
+"reward_bart"
 ]
-for agent in ["PolicyIterationAgent", "QAgent", "SarsaAgent"]:
+# for agent in ["MostFrequentPolicyAgent", "PolicyIterationAgent", "QAgent", "SarsaAgent"]:
+for agent in ["MostFrequentPolicyAgent"]:
     for history in experiments:
         for rew_type in rew_types:
             h = history.split("/")[-1].split(".")[0]

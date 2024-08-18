@@ -28,6 +28,7 @@ experiment_1["experiment"] = "Exp1"
 experiment_1["num_steps"] = experiment_1["time"]
 experiment_1["time"] = None
 experiment_1["description"] = "Basic Experiment"
+experiment_1.loc[experiment_1.agent=="MostFrequentPolicyAgentMod","agent"] = "MostFrequentPolicyAgent"
 
 experiment_2["experiment"] = "Exp2"
 experiment_2["num_steps"] = experiment_2["time"]
@@ -50,7 +51,7 @@ results_agg = all_experiments.drop(["steps", "description"], axis=1).groupby([
             "min_inc",
             "rew_type",
             "agent",
-            "episode"
+            "repetition"
         ]).mean().reset_index().groupby([
             "experiment",
             "min_inc",
