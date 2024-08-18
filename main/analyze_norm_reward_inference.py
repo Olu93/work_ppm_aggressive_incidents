@@ -4,18 +4,30 @@ import ast
 from collections import Counter, defaultdict
 import io
 from tqdm import tqdm
+from scipy import stats
+import numpy as np
 # %%
-df_mean_results = pd.read_pickle('../data/experiment_inference.pkl')
+df_mean_results = pd.read_pickle('../data/experiment_inference_correction.pkl')
 df_mean_results
 # %%
-results_agg = (df_mean_results.drop(["steps"], axis=1).groupby([
+results_agg = df_mean_results.drop(["steps"], axis=1).groupby([
             "min_inc",
             "rew_type",
             "agent",
-        ]).agg(["mean", "std"]))
+            "episode"
+        ]).mean().reset_index().groupby([
+            "min_inc",
+            "rew_type",
+            "agent",
+        ]).agg(["mean", "std", "count"])
+
 results_agg
 
-    # best_configs.to_csv("experiment_best_params.csv")
+# %%
+margin_of_err = (stats.norm.ppf((1 + 0.95) / 2)) * (results_agg[("total_reward", "std")]/np.sqrt(results_agg[("total_reward", "count")]))
+results_agg[("total_reward", "confidence_intervall_left")] = results_agg[("total_reward", "mean")]-margin_of_err
+results_agg[("total_reward", "confidence_intervall_right")] = results_agg[("total_reward", "mean")]+margin_of_err
+results_agg
 # %%
 results_agg.loc[("../data/frequencies_final_1.csv", "reward_all_actions_the_same")].to_csv('../data/inference_results_history_1_reward_all_actions_the_same.csv')
 results_agg.loc[("../data/frequencies_final_1.csv", "reward_all_actions_the_same")]
@@ -44,19 +56,19 @@ def get_counts(df_mean_results, agent, history, rew_type):
     cnt_x = Counter([tuple(l) for l in q_results["steps"].tolist()])
     return cnt_t, cnt_r, cnt_x
 
-cnt_t, cnt_r, cnt_x = get_counts(df_mean_results, agent)
-cnt_t
+# cnt_t, cnt_r, cnt_x = get_counts(df_mean_results, agent)
+# cnt_t
 # %%
 experiments = [
-     "../data/frequencies_final_1.csv",
+    #  "../data/frequencies_final_1.csv",
      "../data/frequencies_final_3.csv"
 ]
 
 rew_types = [
 "reward_all_actions_the_same",
-"reward_bart"
+# "reward_bart"
 ]
-for agent in ["RandomAgent", "MostFrequentPolicyAgent", "PolicyIterationAgent", "QAgent", "SarsaAgent"]:
+for agent in ["PolicyIterationAgent", "QAgent", "SarsaAgent"]:
     for history in experiments:
         for rew_type in rew_types:
             h = history.split("/")[-1].split(".")[0]

@@ -2,19 +2,32 @@
 import pandas as pd
 import ast
 from collections import Counter, defaultdict
+import io
 from tqdm import tqdm
+from scipy import stats
+import numpy as np
 # %%
-df_mean_results = pd.read_pickle('../data/experiment_probablistic_time_reward_2_inference.pkl')
+df_mean_results = pd.read_pickle('../data/experiment_probablistic_time_reward_2_inference_correction.pkl')
 df_mean_results
 # %%
-results_agg = (df_mean_results.drop(["steps"], axis=1).groupby([
+results_agg = df_mean_results.drop(["steps"], axis=1).groupby([
             "min_inc",
             "rew_type",
             "agent",
-        ]).agg(["mean", "std"]))
+            "episode"
+        ]).mean().reset_index().groupby([
+            "min_inc",
+            "rew_type",
+            "agent",
+        ]).agg(["mean", "std", "count"])
+
 results_agg
 
-    # best_configs.to_csv("experiment_best_params.csv")
+# %%
+margin_of_err = (stats.norm.ppf((1 + 0.95) / 2)) * (results_agg[("total_reward", "std")]/np.sqrt(results_agg[("total_reward", "count")]))
+results_agg[("total_reward", "confidence_intervall_left")] = results_agg[("total_reward", "mean")]-margin_of_err
+results_agg[("total_reward", "confidence_intervall_right")] = results_agg[("total_reward", "mean")]+margin_of_err
+results_agg
 # %%
 # results_agg.loc[("data/frequencies_final_1.csv", "reward_all_actions_the_same")]
 # %%
@@ -46,7 +59,7 @@ rew_types = [
 "reward_all_actions_the_same",
 # "reward_bart"
 ]
-for agent in ["RandomAgent", "MostFrequentPolicyAgent", "QAgent", "SarsaAgent"]:
+for agent in ["QAgent", "SarsaAgent"]:
     for history in experiments:
         for rew_type in rew_types:
             h = history.split("/")[-1].split(".")[0]

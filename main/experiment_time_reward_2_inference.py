@@ -100,7 +100,10 @@ def map_reward_func(type_of_reward):
 
 
 def run_stage_3(Env, time_out, all_agents, min_inc, rew_type, best_agent_collection, repetition, episodes):
+    severity, action_reward = map_reward_func(rew_type)
     env = Env(time_out=time_out, frequencies_file=min_inc, time_probabilities_file="../data/prob_time_given_incident_action.json", classification_pipeline="../data/logistic_regression_pipeline.pkl")
+    env.severity = severity
+    env.action_reward = action_reward    
     initial_starting_point = env.reset()
     partial_results = []
     for k in range(episodes):
@@ -129,7 +132,10 @@ def wrapper_for_experiment_stage3(params):
 
 def wrapper_for_experiment_stage1(params):
     TIME_OUT, episodes_stage_1, episodes_stage_2, repeats_stage_2, Env, all_agent_params, min_inc, rew_type, agent_number, Agent = params
+    severity, action_reward = map_reward_func(rew_type)    
     env = Env(time_out=TIME_OUT, frequencies_file=min_inc, time_probabilities_file="../data/prob_time_given_incident_action.json", classification_pipeline="../data/logistic_regression_pipeline.pkl")
+    env.severity = severity
+    env.action_reward = action_reward    
     agent = Agent(env=env, **all_agent_params[Agent])
     for e in range(episodes_stage_1):
         last_reward, _, trained_agent = run_training_episode(agent, env)
@@ -241,7 +247,7 @@ if __name__ == "__main__":
     # best_agent_collection = json.loads(json.dumps(best_agent_collection))
     # Stage 3: Validation
 
-    pkl.dump(best_agent_collection, io.open('../data/best_agents_probablistic_reward.pkl', 'wb'))
+    pkl.dump(best_agent_collection, io.open('../data/best_agents_probablistic_reward_correction.pkl', 'wb'))
     all_results = []
 
 
@@ -256,6 +262,6 @@ if __name__ == "__main__":
     #         all_results.append(res)
 
     df_all_results = pd.DataFrame(all_results)
-    df_all_results.to_pickle("../data/experiment_probablistic_time_reward_2_inference.pkl")
+    df_all_results.to_pickle("../data/experiment_probablistic_time_reward_2_inference_correction.pkl")
 
     

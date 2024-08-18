@@ -94,8 +94,8 @@ import agent as agents
 
 import importlib
 
-importlib.reload(envs)
-importlib.reload(agents)
+# importlib.reload(envs)
+# importlib.reload(agents)
 
 
 def visualize_agent_brain(agent, env: envs.TaskEnv):
@@ -172,7 +172,7 @@ def run_training_episode(agent: agents.TDAgent, env: envs.TaskEnv):
     while not done:
         next_action = agent.select_action(current_state) if not next_action else next_action
         next_state, reward, done, _ = env.step(next_action)
-        total_reward += reward / env.timer
+        total_reward += reward 
         # print(reward)
         next_action = agent.learn(current_state, next_action, next_state, reward, done)
         current_state = next_state
@@ -216,14 +216,15 @@ def show_trained_agent(agent: agents.TDAgent, env: envs.TaskEnv):
     # animate_run(procedure)
     plt.show()
 
-
+# %%
 # env = TaskEnv(timeout_reward=-1, goal_reward=1, invalid_reward=-1, time_reward_multiplicator=.01)
 env = envs.TaskEnv(frequencies_file="../data/frequencies_final_3.csv")
 # agent = agents.RandomAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
 # agent = agents.SarsaAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
-agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.9)
+# agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.2)
+agent = agents.PolicyIterationAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.2)
 # agent = agents.ExpectedSarsaAgent(env=env, exploration_rate=0.1, learning_rate=.1, discount_factor=0.9)
-for i in tqdm(range(3000)):
+for i in tqdm(range(10000)):
     total_reward, last_state, agent = run_training_episode(agent, env)
 show_trained_agent(agent, env)
 # %%
@@ -231,7 +232,7 @@ res = []
 res2 = []
 for j in range(5):
     env.reset()
-    agent = agents.QAgent(env=env, exploration_rate=0.01, learning_rate=0.1, discount_factor=0.1)
+    agent = agents.QAgent(env=env, exploration_rate=0.1, learning_rate=0.1, discount_factor=0.2)
     for i in tqdm(range(10000)):
         total_reward, last_state, agent = run_training_episode(agent, env)
         res.append({
@@ -255,7 +256,7 @@ for run, gr_df in res_df.groupby('run'):
 
 # %%
 res_df2 = pd.DataFrame(res2)
-for run, gr_df in res_df2.groupby('run'):
+for run, gr_df in list(res_df2.groupby('run'))[:1]:
     plt.plot(gr_df["episode"], gr_df["reward"])
 
 

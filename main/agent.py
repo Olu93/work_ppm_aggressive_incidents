@@ -16,7 +16,7 @@ class TDAgent(ABC):
         self.alpha = learning_rate
         self.gamma = discount_factor
         self.q_table = np.zeros(
-            (env.observation_space.n + 1, env.action_space.n), dtype=float)
+            (env.observation_space.n, env.action_space.n), dtype=float)
         self.actions = env.action_space
         self.states = env.observation_space
 
@@ -52,12 +52,12 @@ class QAgent(TDAgent):
     def learn(self, state: Tuple[int, int], action: int,
               next_state: Tuple[int, int], reward: float, done: bool) -> int:
         # Update the Q based on the result
-        best_q = np.amax(self.q_table[next_state])
         cell_to_update = (state, action)
         if done:
             self.q_table[cell_to_update] += self.alpha * (
                 reward - self.q_table[cell_to_update])
         else:
+            best_q = np.amax(self.q_table[next_state])
             self.q_table[cell_to_update] += self.alpha * (
                 reward + (self.gamma * best_q) - self.q_table[cell_to_update])
         return None
@@ -71,13 +71,14 @@ class SarsaAgent(TDAgent):
     def learn(self, state: Tuple[int, int], action: int,
               next_state: Tuple[int, int], reward: float, done: bool) -> int:
         # Update the Q based on the result
-        next_action = self.select_action(next_state, use_greedy_strategy=False)
-        next_q = self.q_table[(next_state, next_action)]
         cell_to_update = (state, action)
+        next_action = None
         if done:
             self.q_table[cell_to_update] += self.alpha * (
                 reward - self.q_table[cell_to_update])
         else:
+            next_action = self.select_action(next_state, use_greedy_strategy=False)
+            next_q = self.q_table[(next_state, next_action)]
             self.q_table[cell_to_update] += self.alpha * (
                 reward + (self.gamma * next_q) - self.q_table[cell_to_update])
         return next_action
@@ -91,12 +92,12 @@ class ExpectedSarsaAgent(TDAgent):
     def learn(self, state: Tuple[int, int], action: int,
               next_state: Tuple[int, int], reward: float, done: bool) -> int:
         # Update the Q based on the result
-        next_q = np.mean(self.q_table[next_state])
         cell_to_update = (state, action)
         if done:
             self.q_table[cell_to_update] += self.alpha * (
                 reward - self.q_table[cell_to_update])
         else:
+            next_q = np.mean(self.q_table[next_state])
             self.q_table[cell_to_update] += self.alpha * (
                 reward + (self.gamma * next_q) - self.q_table[cell_to_update])
         return None
@@ -158,13 +159,49 @@ class MostFrequentPolicyAgent(TDAgent):
     def learn(self, state, action, next_state, reward, done):
         return None
 
+class MostFrequentPolicyAgentMod(TDAgent):
+
+    def __init__(self,
+                 env: envs.TaskEnv,
+                 exploration_rate: float = None,
+                 learning_rate: float = None,
+                 discount_factor: float = None) -> int:
+        self.epsilon = 0  # A random agent "explores" always, so epsilon will be 1
+        self.alpha = 0  # A random agent never learns, so there's no need for a learning rate
+        self.gamma = 0  # A random agent does not update it's q-table. Hence, it's zero.
+        self.q_table = np.zeros(env.observation_space.shape +
+                                (env.action_space.n, ),
+                                dtype=float)
+        self.actions = env.action_space
+        self.act2idx = env.act2idx
+        self.inc2idx = env.inc2idx
+        self.idx2act = env.idx2act
+        self.idx2inc = env.idx2inc
+        self.motions = env.motions
+
+    def select_action(self,
+                      state: Tuple[int, int],
+                      use_greedy_strategy: bool = False) -> int:
+        if self.idx2inc[state] == "va":
+            return self.act2idx[self.motions[1]]
+        if self.idx2inc[state] == "sib":
+            return self.act2idx[self.motions[2]]
+        if self.idx2inc[state] == "po":
+            return self.act2idx[self.motions[1]]
+        if self.idx2inc[state] == "pp":
+            return self.act2idx[self.motions[1]]
+        
+
+    def learn(self, state, action, next_state, reward, done):
+        return None
+
 
 class PolicyIterationAgent(TDAgent):
 
     def __init__(self, env: envs.TaskEnv, exploration_rate: float,
                  learning_rate: float, discount_factor: float, **kwargs):
         super().__init__(env, exploration_rate, learning_rate, discount_factor)
-        # self.q_table = np.random.uniform(size=(env.observation_space.n + 1, env.action_space.n))
+        self.q_table = np.random.uniform(size=(env.observation_space.n + 1, env.action_space.n))
         self.state_values = np.zeros(self.states.n+1)
         self.max_iterations = kwargs.get('max_iterations', 100)
         self.env = env

@@ -99,7 +99,11 @@ def map_reward_func(type_of_reward):
 
 
 def run_stage_3(Env, timeout , all_agents, best_agent_collection, min_inc, rew_type, repetition, episodes):
+    severity, action_reward = map_reward_func(rew_type)
     env = Env(time_out=timeout, frequencies_file=min_inc)
+    env.severity = severity
+    env.action_reward = action_reward
+        
     initial_starting_point = env.reset()
     partial_results = []
     for k in range(episodes):
@@ -130,13 +134,13 @@ if __name__ == "__main__":
     TIME_OUT = 6
 
     min_amount_incidents = [
-        "../data/frequencies_final_1.csv",
+        # "../data/frequencies_final_1.csv",
         "../data/frequencies_final_3.csv",
         # "data/frequencies_final_5.csv",
         # "data/frequencies_final_7.csv",
     ]
     reward_fn = [
-        "reward_bart",
+        # "reward_bart",
         "reward_all_actions_the_same",
         # "reward_zero_tau",
         # "reward_zero_tau_all_actions_the_same",
@@ -195,7 +199,10 @@ if __name__ == "__main__":
     # Stage 1: Training
     training_results = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(dict))))
     for min_inc, rew_type, agent_number, Agent in tqdm(all_params_stage1):
+        severity, action_reward = map_reward_func(rew_type)
         env = Env(time_out=TIME_OUT, frequencies_file=min_inc)
+        env.severity = severity
+        env.action_reward = action_reward
         agent = Agent(env=env, **all_agent_params[Agent])
         for e in range(episodes_stage_1):
             last_reward, _, trained_agent = run_training_episode(agent, env)
@@ -240,7 +247,7 @@ if __name__ == "__main__":
             all_results.append(res)
 
     df_all_results = pd.DataFrame(all_results)
-    df_all_results.to_pickle("../data/experiment_inference.pkl")
+    df_all_results.to_pickle("../data/experiment_inference_correction.pkl")
 
     # for rew_type, agent in best_agent_collection[min_inc].items():
     #     overall_agent_score

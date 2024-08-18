@@ -45,9 +45,11 @@ new_df.loc[(new_df[cols_important].sum(axis=1)).isin(other_groups[cols_important
 new_df
 
 # %%
+# Subsetting the data based on state action pairs
 groups = list(new_df.groupby(cols_important))
 
 # %%
+# Fitting the weibull distribution to the time data
 from collections import defaultdict
 import json
 params=defaultdict(dict)
