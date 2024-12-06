@@ -54,6 +54,14 @@ agent_4 = df_agg_f_test[(df_agg_f_test.experiment==exp)&(df_agg_f_test.agent=="P
 print(stats.f_oneway(agent_1,agent_2,agent_3))
 print(pairwise_tukeyhsd(endog=df_agg_f_test[(df_agg_f_test.experiment==exp)]["total_reward"], groups=df_agg_f_test[(df_agg_f_test.experiment==exp)]["agent"], alpha=0.05))
 # %%
+exp = "Exp5"
+agent_1 = df_agg_f_test[(df_agg_f_test.experiment==exp)&(df_agg_f_test.agent=="MostFrequentPolicyAgent")]["total_reward"]
+agent_2 = df_agg_f_test[(df_agg_f_test.experiment==exp)&(df_agg_f_test.agent=="QAgent")]["total_reward"]
+agent_3 = df_agg_f_test[(df_agg_f_test.experiment==exp)&(df_agg_f_test.agent=="SarsaAgent")]["total_reward"]
+agent_4 = df_agg_f_test[(df_agg_f_test.experiment==exp)&(df_agg_f_test.agent=="PolicyIterationAgent")]["total_reward"]
+print(stats.f_oneway(agent_1,agent_2,agent_3))
+print(pairwise_tukeyhsd(endog=df_agg_f_test[(df_agg_f_test.experiment==exp)]["total_reward"], groups=df_agg_f_test[(df_agg_f_test.experiment==exp)]["agent"], alpha=0.05))
+# %%
 # %%
 results_agg = all_experiments.drop(["steps", "description"], axis=1).groupby([
             "experiment",
@@ -74,4 +82,6 @@ margin_of_err = (stats.norm.ppf((1 + 0.95) / 2)) * (results_agg[("total_reward",
 results_agg[("total_reward", "confidence_intervall_left")] = results_agg[("total_reward", "mean")]-margin_of_err
 results_agg[("total_reward", "confidence_intervall_right")] = results_agg[("total_reward", "mean")]+margin_of_err
 results_agg
+# %%
+results_agg.reset_index()[results_agg.reset_index().experiment=="Exp5"].drop(["min_inc", "rew_type"], axis=1)
 # %%
