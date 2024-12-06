@@ -24,6 +24,10 @@ experiment_4_tmp = pd.read_pickle('../data/experiment_probablistic_time_reward_2
 experiment_4 = experiment_4_tmp[(experiment_4_tmp.min_inc == "../data/frequencies_final_3.csv") & (experiment_4_tmp.rew_type == "reward_all_actions_the_same")]
 experiment_4
 # %%
+experiment_5_tmp = pd.read_pickle('../data/experiment_probablistic_time_reward_3_inference_bart_reward.pkl')
+experiment_5 = experiment_5_tmp[(experiment_5_tmp.min_inc == "../data/frequencies_final_3.csv") & (experiment_5_tmp.rew_type == "reward_bart")]
+experiment_5
+# %%
 experiment_1["experiment"] = "Exp1"
 experiment_1["num_steps"] = experiment_1["time"]
 experiment_1["time"] = None
@@ -42,8 +46,13 @@ experiment_3["description"] = "all actions same penalty"
 
 experiment_4["experiment"] = "Exp4"
 experiment_4["description"] = "time aware reward function"
+
+experiment_5["experiment"] = "Exp5"
+experiment_5["description"] = "time aware reward function with original action rewards"
+
+
 # %%
-all_experiments = pd.concat([experiment_1, experiment_2, experiment_3, experiment_4])
+all_experiments = pd.concat([experiment_1, experiment_2, experiment_3, experiment_4, experiment_5])
 all_experiments
 # %%
 results_agg = all_experiments.drop(["steps", "description"], axis=1).groupby([
