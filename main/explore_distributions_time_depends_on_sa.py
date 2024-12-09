@@ -55,6 +55,7 @@ def plot_gamma(ax:Axes, t, x, idx, num):
     ax.legend()
     mse = mse_cdf(t, stats.gamma, (fit_alpha, fit_loc, fit_beta))
     ll = log_likelihood(t, stats.gamma, (fit_alpha, fit_loc, fit_beta))
+
     return mse, ll
 
 def plot_geom(ax:Axes, t, x, idx, num):
@@ -128,6 +129,9 @@ for idx, gdf in groups:
     ax = ax.flatten()
     t = gdf[col_env_reaction_days]
     x = np.linspace(0, np.max(t), 100)
+    ax[0].set_ylim(0,0.1)
+    for tmp_ax in ax:
+        tmp_ax.set_xlim(0,100)
     gamma_metrics.append(plot_gamma(ax[0], t, x, idx, len(gdf)))
     geom_metrics.append(plot_geom(ax[1], t, x, idx, len(gdf)))
     exp_metrics.append(plot_exp(ax[2], t, x, idx, len(gdf)))
