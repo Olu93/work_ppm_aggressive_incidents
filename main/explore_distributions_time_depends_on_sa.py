@@ -131,7 +131,9 @@ for idx, gdf in groups:
     x = np.linspace(0, np.max(t), 100)
     ax[0].set_ylim(0,0.1)
     for tmp_ax in ax:
-        tmp_ax.set_xlim(0,100)
+        tmp_ax.set_xlabel("Days")
+        # tmp_ax.set_ylabel("P()")
+
     gamma_metrics.append(plot_gamma(ax[0], t, x, idx, len(gdf)))
     geom_metrics.append(plot_geom(ax[1], t, x, idx, len(gdf)))
     exp_metrics.append(plot_exp(ax[2], t, x, idx, len(gdf)))
